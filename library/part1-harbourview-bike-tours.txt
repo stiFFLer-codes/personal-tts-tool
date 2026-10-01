@@ -1,0 +1,75 @@
+Title: Part 1 – Harbourview Bike Tours
+Recording script
+You will hear a woman phoning a bike tour company to book a tour.
+Sam: Good morning, Harbourview Bike Tours, Sam speaking. How can I help?
+Clara: Oh hi. I'm calling to book a tour for a group of friends. I tried doing it on your website, but it kept crashing at the payment page.
+Sam: Sorry about that, we're having some trouble with it this week. I can take the booking over the phone, no problem. Can I start with your name?
+Clara: Sure. It's Clara Whitfield.
+Sam: Is that W-H-I-T-E...
+Clara: No, there's no E. It's W-H-I-T-F-I-E-L-D.
+Sam: W-H-I-T-F-I-E-L-D. Got it. And which date were you thinking of?
+Clara: We'd originally said the sixteenth of March, but one of my friends has a wedding that weekend. Could we do the twenty-third instead?
+Sam: Let me check... yes, the twenty-third is fine. It's a Saturday, so it'll be busier, but we've got space.
+Clara: Great.
+Sam: And how many of you will there be?
+Clara: There were eight of us, but my brother's just pulled out, so seven. Oh, wait. Does that include children? One of my friends is bringing her little boy.
+Sam: How old is he?
+Clara: He's four.
+Sam: Under-fives ride free and don't count towards the group, so I'll put down seven.
+Clara: Perfect.
+Sam: Now, which route were you interested in? We've got three: the Castle Trail, the Lighthouse Trail and the Riverside Trail.
+Clara: My friend did the Castle Trail last year and loved it, so we were hoping for that one.
+Sam: Ah, I'm afraid the Castle Trail's fully booked on the twenty-third. Everyone wants it in spring. The Riverside one is very flat and gentle, though.
+Clara: Hmm, most of us are fairly fit. What's the Lighthouse one like?
+Sam: It's hillier, about twenty-two kilometres, but the views over the bay are amazing.
+Clara: Let's go with that, then.
+Sam: Lovely. Now, the meeting point. A lot of people assume it's our shop, but on Saturdays we meet outside the museum, because it's closer to the start of the trail.
+Clara: Not the train station? I'm sure my friend said the station.
+Sam: That used to be the case, but we changed it last year. It's definitely the museum now.
+Clara: OK, I'll tell everyone.
+Sam: Will you need any extra equipment? Helmets are included for everyone.
+Clara: Yes, actually. For the little boy, we'll need a child seat on one of the bikes.
+Sam: A seat, no problem. I've noted that down.
+[Pause: you now have 30 seconds to look at questions 7 to 10.]
+Clara: Is there anything we should bring?
+Sam: The weather changes really quickly on the coast, so everyone should bring a waterproof jacket. Umbrellas aren't much use on a bike. And we provide water bottles, so don't worry about those.
+Clara: What about food?
+Sam: Lunch is included. In summer we eat on the beach, but in March it's served in the garden of the old customs house. There's a covered area if it rains.
+Clara: Sounds lovely. And how much is it?
+Sam: The full price is forty-two pounds per person. We ask for a deposit of fifteen pounds each to hold the booking. It used to be ten, but we had too many people not turning up.
+Clara: Fair enough. When do you need that by?
+Sam: Normally we'd ask for it within two days, so that'd be Wednesday, but since the website's down I'll give you until Friday.
+Clara: That's really kind. Thanks so much.
+That is the end of Part 1.
+
+=== QUESTIONS ===
+Questions 1–6
+Complete the form below. Write ONE WORD AND/OR A NUMBER for each answer.
+
+HARBOURVIEW BIKE TOURS – BOOKING FORM
+Name: Clara 1 ________
+Date of tour: 2 ________ March
+Number in group: 3 ________
+Route: the 4 ________ Trail
+Meeting point: outside the 5 ________
+Extra equipment: a child 6 ________
+
+Questions 7–10
+Complete the notes below. Write ONE WORD AND/OR A NUMBER for each answer.
+
+Bring: a waterproof 7 ________
+Lunch: in the garden of the old 8 ________ house
+Deposit per person: £ 9 ________
+Pay deposit by: 10 ________
+
+=== ANSWERS ===
+1. Whitfield
+2. 23(rd) | twenty-third
+3. 7 | seven
+4. Lighthouse
+5. museum
+6. seat
+7. jacket
+8. customs
+9. 15 | fifteen
+10. Friday
