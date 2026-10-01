@@ -1,0 +1,12 @@
+# local environment
+.venv/
+__pycache__/
+*.pyc
+
+# downloaded voice model (~350 MB): fetched by setup.bat
+models/
+
+# generated audio, synthesis cache and your personal scores
+output/
+cache/
+results/
