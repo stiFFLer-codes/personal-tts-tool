@@ -29,6 +29,10 @@ _CURRENCY = {"£": ("pound", "pounds", "pence"), "$": ("dollar", "dollars", "cen
              "€": ("euro", "euros", "cents")}
 
 
+def has_spelling(text: str) -> bool:
+    return bool(_SPELLED.search(text))
+
+
 def _digits(match: re.Match) -> str:
     raw = match.group(0)
     if sum(c.isdigit() for c in raw) < 5 and not (raw.startswith("0") and len(raw) >= 3):

@@ -1,14 +1,17 @@
 # 🎧 IELTS Listening Studio
 
-A personal, **offline** text-to-speech tool built for one job: **mastering the IELTS Listening section.**
+A personal, **offline** text-to-speech tool built for one job: **mastering the IELTS Listening section,
+one Part at a time.**
 
-Paste a listening script (from Claude, a book, anywhere). The studio gives every speaker a natural British
-(or American) neural voice, adds the real exam pauses, and turns it into a test you can **practise** line by line
-or **sit under exam conditions**, then marks your answers.
+The app has a page for each Part of the real test (Part 1 conversation, Part 2 monologue, Part 3 discussion,
+Part 4 lecture) and one for a **Full Test**. Each page gives you an exam-accurate prompt to paste into Claude.
+Claude writes a brand-new test in a strict format, you paste it back, the app checks that it matches the real
+exam, and then voices it with natural British (or American) neural voices and the real exam pauses. You sit it
+**under exam conditions**, it marks you like an examiner, and Progress shows which question types cost you marks.
 
 No cloud, no API keys, no subscriptions. After a one-time setup everything runs on your laptop.
 
-**Claude writes the script → you paste it → the studio speaks it → you answer → it marks you.**
+**Pick a Part → copy the prompt → Claude writes the test → paste it back → listen once → get marked → drill your weak spots.**
 
 ---
 
@@ -18,8 +21,8 @@ No cloud, no API keys, no subscriptions. After a one-time setup everything runs 
 2. Double-click **`setup.bat`** (one time: installs the voice engine and downloads the ~350 MB voice model).
 3. Double-click **`run.bat`**. The studio opens in your browser at `http://127.0.0.1:8765`.
 
-A sample test (*Part 1: Harbourview Bike Tours*) is already in the library. Pick it from **📚 Library**, hit
-**Generate**, then take it in the **Exam** tab.
+Sample tests for every Part, plus two full 40-question tests, are already in the library. Open a Part page,
+pick one from **📚 Library**, hit **Generate**, then **📝 Take as exam**.
 
 <details>
 <summary>macOS / Linux</summary>
@@ -34,15 +37,25 @@ python -m ielts_tts
 
 ## Daily workflow
 
-1. **Get a script.** Open [`docs/CLAUDE_SCRIPT_PROMPT.md`](docs/CLAUDE_SCRIPT_PROMPT.md), copy the prompt into Claude,
-   choose the part, topic and difficulty. Claude returns a script with questions and an answer key in the right format.
-2. **Studio:** paste it and check the cast (change any voice and press ▶ to preview), then **Generate audio**.
-   Save it to the library if you want to keep it.
-3. **Exam:** the recording plays **once**, with no pause and no rewind, just like test day. Type answers as you listen.
-   You get 2 minutes to check, then it's marked. Full 40-question tests show an **estimated band**.
-4. **Practice:** review what you missed. Click any transcript line to jump there, loop a tricky line, slow it down to 0.9×,
-   or turn on **Blind mode** to listen without the text.
-5. **Progress:** every exam score is saved, so you can watch the trend go up. 📈
+1. **Pick a task** in the sidebar: Part 1, 2, 3, 4 or Full Test. Each page starts with a short guide to that Part:
+   context, speakers, question types, traps and strategy.
+2. **① Get a script:** choose a topic (or 🎲 for a random real-exam topic), the **question types** (*Real exam mix*,
+   or drill one type such as *Map / plan labelling* or *Matching*), the difficulty and accents. Click **📋 Copy prompt**,
+   then paste it into Claude ([Open Claude ↗](https://claude.ai/new)).
+3. **② Paste Claude's reply** into the page. The **format checklist** confirms it's a real-exam test: 10 questions
+   per Part with the right numbers, official rubrics, answer keys within the word limit, reading time and breaks in
+   the right places, realistic length and speakers. If something fails, **📋 Copy fix request** gives Claude the exact list.
+4. **③ Generate & sit it:** check the cast (▶ previews a voice), generate the audio, then **📝 Take as exam**: it plays
+   **once**, with no pause and no rewind. Full tests have the real 30-second checks between Parts and a Part navigator
+   that follows the audio. You get 2 minutes at the end to check (computer-delivered timing), then it's marked.
+   40-question tests show an **estimated band**.
+5. **🎧 Practice:** review what you missed. Jump to any line or Part, loop a tricky line, slow down to 0.9×, or use
+   **Blind mode**.
+6. **📈 Progress:** accuracy per Part and **per question type**, weakest first, with a **Drill this** button that opens
+   the right Part with that question type preselected.
+
+Prompt files, the format spec and how to edit them: [`docs/CLAUDE_SCRIPT_PROMPT.md`](docs/CLAUDE_SCRIPT_PROMPT.md).
+Have a script from a book or elsewhere? Use **Custom script** (link on Home); its checks are advice only.
 
 ## What makes it IELTS-specific
 
@@ -50,10 +63,12 @@ python -m ielts_tts
 |---|---|
 | Distinct voice per speaker, auto-cast by name (Clara → female, Sam → male) | Part 1/3 conversations sound like real people |
 | Separate **Narrator** voice for "You will hear…" and question breaks | Same structure as the real recording |
-| `[Pause: you now have 30 seconds…]` → narrator reads it + **real 30 s silence** | Practise using reading time |
+| Narrator lines and `[Pause 30]` reading time exactly like the real recording; no mid-lecture break in Part 4 | Practise using reading time |
 | Spelled names (`W-H-I-T-F-I-E-L-D`) said letter by letter with clear gaps | Spelling questions are a Part 1 staple |
 | Phone numbers read digit by digit ("oh four one two…"), prices read naturally | Number traps |
-| Exam mode: plays once, can't pause, 2-minute check time | Builds real test stamina |
+| Exam mode: plays once, can't pause, 30 s checks between Parts, 2-minute check time | Builds real test stamina |
+| Word limits enforced from the rubric ("ONE WORD ONLY" → two words = wrong) | Exactly how the real test is marked |
+| Per-question-type analytics with "Drill this" | Spend time where marks are lost |
 | Marking with alternatives, optional words, numbers as digits or words, "choose TWO" in any order | Marked like the real answer key; spelling must be exact |
 | Practice: line replay, loop, 0.75–1.25× speed, blind mode, keyboard shortcuts | Train weak spots fast |
 | Export **WAV** (or **MP3** if `ffmpeg` is installed) | Listen on your phone while commuting |
@@ -62,19 +77,20 @@ python -m ielts_tts
 
 ## Script format
 
-Your script can be pasted as-is. Lines like `Name: text` are speakers; anything else is the narrator.
-Full spec and examples are in [`docs/CLAUDE_SCRIPT_PROMPT.md`](docs/CLAUDE_SCRIPT_PROMPT.md).
+Claude's reply is one code block in this format. Full spec in [`docs/CLAUDE_SCRIPT_PROMPT.md`](docs/CLAUDE_SCRIPT_PROMPT.md).
 
 ```text
+### PART 1
 Title: Part 1 – Harbourview Bike Tours
-You will hear a woman phoning a bike tour company to book a tour.
+Voices: Narrator=bm_george, Sam=bm_fable, Clara=bf_emma
+Narrator: Part 1. You will hear a woman phoning a bike tour company to book a tour.
+Narrator: First, you have some time to look at questions 1 to 6.
+[Pause 30]
 Sam: Good morning, Harbourview Bike Tours, Sam speaking.
 Clara: It's W-H-I-T-F-I-E-L-D.
-[Pause: you now have 30 seconds to look at questions 7 to 10.]
-
 === QUESTIONS ===
+@SET 1-6 | form | Complete the form below. Write ONE WORD AND/OR A NUMBER for each answer.
 Name: Clara 1 ________
-
 === ANSWERS ===
 1. Whitfield
 ```
@@ -89,14 +105,16 @@ Name: Clara 1 ________
 
 ```
 ielts_tts/
-  parser.py       script → speakers, pauses, questions, answer key
+  parser.py       script → Parts, speakers, pauses, question sets, answer key
+  validator.py    real-exam format checklist (numbering, rubrics, word limits, structure)
+  prompt_builder.py + prompts/   the Claude prompts per task, question plans, topic bank
   normalize.py    spelling / phone numbers / money → speakable text
   voices.py       voice catalogue + automatic casting
-  engine.py       Kokoro synthesis, cache, WAV/MP3, timeline
-  grader.py       IELTS-style marking + band table
+  engine.py       Kokoro synthesis, cache, WAV/MP3, timeline per Part
+  grader.py       IELTS-style marking, word limits, band table, per-type tallies
   server.py       local web server (127.0.0.1 only)
   static/         the web UI
-library/          your saved scripts (.txt)
+library/          sample tests (Parts 1–4, two full tests) + your saved scripts
 output/ cache/ results/ models/   generated locally, git-ignored
 ```
 
@@ -108,7 +126,11 @@ Run the tests with `python -m unittest discover tests`.
   Mixing British and American speakers still trains you for accent variety.
 - These are synthetic voices: very natural, but cleaner than a real recording (no background noise, no overlapping speech).
   Use official Cambridge IELTS books for a few full mocks closer to test day.
-- `setup.bat` needs internet once (pip + model download). After that it's fully offline.
+- The scripts are written by Claude, not taken from real papers. The prompts and the format checklist keep them
+  structurally identical to the real test, but quality can vary, so read the transcript when an answer feels unfair.
+- Map/plan labelling uses a text map in the question paper instead of a drawing.
+- `setup.bat` needs internet once (pip + model download). After that the app is fully offline. Generating new scripts
+  uses Claude, which is online.
 
 ## Troubleshooting
 

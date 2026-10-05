@@ -48,3 +48,35 @@ class Grader(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class WordLimits(unittest.TestCase):
+    def test_rubric_parsing(self):
+        from ielts_tts.grader import word_limit
+        self.assertEqual(word_limit("Write ONE WORD AND/OR A NUMBER for each answer."), {"words": 1, "number": True})
+        self.assertEqual(word_limit("Write ONE WORD ONLY for each answer."), {"words": 1, "number": False})
+        self.assertEqual(word_limit("Write NO MORE THAN TWO WORDS for each answer."), {"words": 2, "number": False})
+        self.assertEqual(word_limit("Write A NUMBER for each answer."), {"words": 0, "number": True})
+        self.assertIsNone(word_limit("Choose the correct letter, A, B or C."))
+
+    def test_codes_count_as_one_number(self):
+        from ielts_tts.grader import count_words
+        self.assertEqual(count_words("GL5 3TB"), (0, 1))
+        self.assertEqual(count_words("23rd March"), (1, 1))
+        self.assertEqual(count_words("well-known shop"), (2, 0))
+
+    def test_over_limit_is_wrong_and_tallies_by_type(self):
+        sets = [{"start": 1, "end": 2, "type": "note", "limit": {"words": 1, "number": False}},
+                {"start": 3, "end": 3, "type": "mcq", "limit": None}]
+        result = grade({"1": "jacket", "2": "lagoon", "3": "B"},
+                       {"1": "waterproof jacket", "2": "Lagoon", "3": "b"}, sets=sets)
+        self.assertFalse(result["results"]["1"]["correct"])
+        self.assertEqual(result["results"]["1"]["reason"], "over the word limit")
+        self.assertTrue(result["results"]["2"]["correct"])
+        self.assertTrue(result["results"]["3"]["correct"])
+        self.assertEqual(result["by_type"], {"note": [1, 2], "mcq": [1, 1]})
+        self.assertEqual(result["by_part"], {"1": [2, 3]})
+
+    def test_letter_answers_need_exactly_one_letter(self):
+        sets = [{"start": 11, "end": 11, "type": "map", "limit": None}]
+        self.assertFalse(grade({"11": "D"}, {"11": "D E"}, sets=sets)["results"]["11"]["correct"])

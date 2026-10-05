@@ -17,7 +17,23 @@ Claude or a book. See docs/CLAUDE_SCRIPT_PROMPT.md for the full spec. In short::
 import re
 from dataclasses import dataclass, field, asdict
 
+from .grader import word_limit
+
 NARRATOR = "Narrator"
+
+# Question-set types used in @SET headers (official IELTS Listening task types).
+SET_TYPES = {
+    "form": "Form completion", "note": "Note completion", "table": "Table completion",
+    "flowchart": "Flow-chart completion", "summary": "Summary completion",
+    "sentence": "Sentence completion", "short": "Short-answer questions",
+    "mcq": "Multiple choice", "mcq-multi": "Multiple choice (choose TWO/THREE)",
+    "matching": "Matching", "map": "Plan / map / diagram labelling",
+}
+_SET_ALIASES = {
+    "notes": "note", "flow-chart": "flowchart", "flow": "flowchart", "short-answer": "short",
+    "multiple-choice": "mcq", "mcq2": "mcq-multi", "multi": "mcq-multi", "plan": "map",
+    "diagram": "map", "labelling": "map", "label": "map", "sentences": "sentence",
+}
 
 _NUMBER_WORDS = {
     "a": 1, "one": 1, "two": 2, "three": 3, "five": 5, "ten": 10, "fifteen": 15,
@@ -51,6 +67,10 @@ _ANSWER_LINE = re.compile(
     r"^\s*(\d{1,2})(?:\s*(?:-|–|&|and)\s*(\d{1,2}))?\s*[.):\-]?\s+(.+)$")
 # "7. Why did..." at line start, or an inline numbered gap: "Name: Clara 1 ________"
 _QUESTION_NUM = re.compile(r"^\s*(\d{1,2})\s*[.)]\s|(?<![\w£$€.,])(\d{1,2})\s*(?:_{2,}|…+|\.{4,})", re.M)
+# "@SET 11-14 | mcq | Choose the correct letter, A, B or C."
+_SET = re.compile(r"^\s*@SET\s+(\d{1,2})\s*(?:[-–]\s*(\d{1,2}))?\s*\|\s*([\w -]+?)\s*(?:\|\s*(.*))?$", re.I)
+_FENCE = re.compile(r"^\s*(?:```|~~~)")
+_PART = re.compile(r"^\s*#{1,3}\s*PART\s+(\d)\b.*$", re.I | re.M)
 
 
 @dataclass
@@ -60,6 +80,8 @@ class Segment:
     text: str = ""
     seconds: float = 0.0
     line: int = 0        # 1-based line in the pasted script
+    part: int = 0        # IELTS Part (1-4), 0 when unknown
+    auto: bool = False   # inserted by the tool (standard narration), not written in the script
 
 
 @dataclass
@@ -71,18 +93,54 @@ class Test:
     questions: str = ""
     answers: dict = field(default_factory=dict)       # "1" -> "Whitfield"
     answer_groups: list = field(default_factory=list) # [[21, 22]] for "choose TWO" questions
+    sets: list = field(default_factory=list)          # @SET headers: start, end, type, rubric, limit
+    parts: list = field(default_factory=list)         # per-Part view for multi-part tests
+    kind: str = "custom"                              # part1..part4 | full | custom
     warnings: list = field(default_factory=list)
 
     @property
     def question_numbers(self):
-        nums = {int(m.group(1) or m.group(2)) for m in _QUESTION_NUM.finditer(self.questions)}
-        return sorted(nums | {int(n) for n in self.answers})
+        return numbers_in(self.questions, self.answers, self.sets)
 
     def to_dict(self):
         data = asdict(self)
         data["question_numbers"] = self.question_numbers
         data["has_narrator"] = any(s.speaker == NARRATOR for s in self.segments)
         return data
+
+
+def numbers_in(questions: str, answers: dict, sets: list) -> list:
+    """Question numbers from the paper (numbered lines and gaps), the key and @SET ranges."""
+    paper = "\n".join(line for line in _strip_fences(questions).splitlines() if not _SET.match(line))
+    nums = {int(m.group(1) or m.group(2)) for m in _QUESTION_NUM.finditer(paper)}
+    nums |= {int(n) for n in answers}
+    for s in sets:
+        nums |= set(range(s["start"], s["end"] + 1))
+    return sorted(nums)
+
+
+def _strip_fences(text: str) -> str:
+    """Drop ``` blocks (text maps, diagrams) so their contents aren't read as questions."""
+    out, inside = [], False
+    for line in text.splitlines():
+        if _FENCE.match(line):
+            inside = not inside
+            continue
+        if not inside:
+            out.append(line)
+    return "\n".join(out)
+
+
+def parse_set(line: str):
+    m = _SET.match(line)
+    if not m:
+        return None
+    raw_type = m.group(3).strip().lower().replace(" ", "-")
+    qtype = _SET_ALIASES.get(raw_type, raw_type)
+    rubric = (m.group(4) or "").strip()
+    start = int(m.group(1))
+    return {"start": start, "end": int(m.group(2) or start), "type": qtype,
+            "known": qtype in SET_TYPES, "rubric": rubric, "limit": word_limit(rubric)}
 
 
 def pause_seconds(text: str, default: float = 5.0) -> float:
@@ -122,6 +180,8 @@ def parse(script: str) -> Test:
     for number, raw in enumerate(script.splitlines(), start=1):
         line = raw.strip()
         if not line:
+            if section == "questions":
+                question_lines.append("")
             continue
 
         if _SECTION.match(line):
@@ -129,6 +189,8 @@ def parse(script: str) -> Test:
             continue
         if section == "questions":
             question_lines.append(raw.rstrip())
+            if (qset := parse_set(line)):
+                test.sets.append(qset)
             continue
         if section == "answers":
             m = _ANSWER_LINE.match(line)
@@ -142,6 +204,8 @@ def parse(script: str) -> Test:
                 test.warnings.append(f"Line {number}: couldn't read answer '{line[:40]}'")
             continue
 
+        if _PART.match(line):              # "### PART 2" is structure, not a title
+            continue
         if not title_found and (m := _TITLE.match(line)):
             test.title, title_found = m.group(1).strip(), True
             continue
@@ -187,6 +251,10 @@ def parse(script: str) -> Test:
         test.segments.append(Segment("speech", speaker, text, line=number))
 
     test.questions = "\n".join(question_lines).strip("\n")
+    for group in test.answer_groups:      # "choose TWO" answers are letter sets
+        for qset in test.sets:
+            if qset["start"] <= group[0] <= qset["end"] and qset["type"] == "mcq":
+                qset["type"] = "mcq-multi"
 
     if not title_found:
         first = next((s.text for s in test.segments if s.kind == "speech"), "")
@@ -200,3 +268,103 @@ def parse(script: str) -> Test:
     if test.answers and missing:
         test.warnings.append(f"No answer given for question(s) {', '.join(map(str, missing))}.")
     return test
+
+
+PART_RANGES = {1: (1, 10), 2: (11, 20), 3: (21, 30), 4: (31, 40)}
+
+
+def _guess_part(test: Test) -> int:
+    nums = test.question_numbers
+    return (nums[0] - 1) // 10 + 1 if nums and 1 <= nums[0] <= 40 else 0
+
+
+def _end_of_part(part: int, line: int) -> list:
+    return [Segment("speech", NARRATOR, f"That is the end of Part {part}. "
+                    "You now have half a minute to check your answers.", line=line, part=part, auto=True),
+            Segment("pause", seconds=30.0, text="half a minute to check your answers",
+                    line=line, part=part, auto=True)]
+
+
+def unwrap(script: str) -> str:
+    """Drop an outer ```text ... ``` fence copied along with Claude's answer."""
+    lines = script.strip("\n").splitlines()
+    if len(lines) >= 2 and lines[0].strip().startswith("```") and lines[-1].strip() == "```":
+        return "\n".join(lines[1:-1])
+    return script
+
+
+def parse_test(script: str, kind: str = "custom") -> Test:
+    """Parse a script that may contain several Parts (### PART 1 ... ### PART 4).
+
+    Each block is parsed with parse(); the result is one Test whose segments are
+    tagged with their Part, plus a per-Part view in test.parts. Full tests get the
+    standard between-Part narration added where the script leaves it out.
+    """
+    script = unwrap(script)
+    markers = list(_PART.finditer(script))
+    if not markers:
+        test = parse(script)
+        test.kind = kind
+        part = int(kind[4:]) if kind.startswith("part") else _guess_part(test)
+        for seg in test.segments:
+            seg.part = part
+        if part:
+            test.parts = [{"n": part, "title": test.title, "questions": test.questions,
+                           "numbers": test.question_numbers, "sets": test.sets}]
+        return test
+
+    preamble = parse(script[:markers[0].start()])
+    combined = Test(kind="full" if len(markers) > 1 else kind)
+    combined.voice_overrides.update(preamble.voice_overrides)
+    has_title = bool(re.search(r"^\s*title\s*:", script[:markers[0].start()], re.I | re.M))
+    titles = []
+
+    for i, m in enumerate(markers):
+        part = int(m.group(1))
+        body_start = m.end()
+        body_end = markers[i + 1].start() if i + 1 < len(markers) else len(script)
+        offset = script.count("\n", 0, body_start)
+        block = parse(script[body_start:body_end])
+        for seg in block.segments:
+            seg.part, seg.line = part, seg.line + offset
+        segments = block.segments
+        is_last = i == len(markers) - 1
+        if combined.kind == "full" and not is_last:
+            said_end = any(s.kind == "speech" and re.search(r"end of part", s.text, re.I)
+                           for s in segments[-3:])
+            ends_with_pause = bool(segments) and segments[-1].kind == "pause"
+            if not said_end:
+                segments = segments + _end_of_part(part, segments[-1].line if segments else offset)
+            elif not ends_with_pause:
+                segments = segments + _end_of_part(part, segments[-1].line)[1:]
+        combined.segments.extend(segments)
+        for who in block.speakers:
+            if who not in combined.speakers:
+                combined.speakers.append(who)
+        combined.voice_overrides.update(block.voice_overrides)
+        combined.answers.update(block.answers)
+        combined.answer_groups.extend(block.answer_groups)
+        combined.sets.extend(block.sets)
+        combined.warnings.extend(f"Part {part}: {w}" for w in block.warnings)
+        combined.parts.append({"n": part, "title": block.title, "questions": block.questions,
+                               "numbers": block.question_numbers, "sets": block.sets})
+        titles.append(block.title)
+
+    combined.questions = "\n\n".join(p["questions"] for p in combined.parts if p["questions"])
+    if has_title:
+        combined.title = preamble.title
+    elif len(markers) > 1:
+        combined.title = "Full Listening Test"
+    else:
+        combined.title = titles[0]
+    return combined
+
+
+def detect_task(test: Test) -> str:
+    """Which task page a parsed script belongs to: part1..part4, full or custom."""
+    found = [p["n"] for p in test.parts]
+    if found == [1, 2, 3, 4]:
+        return "full"
+    if len(found) == 1 and found[0] in PART_RANGES:
+        return f"part{found[0]}"
+    return "custom"

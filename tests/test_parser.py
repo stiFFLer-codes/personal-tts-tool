@@ -1,38 +1,49 @@
 import unittest
 from pathlib import Path
 
-from ielts_tts.parser import NARRATOR, parse, pause_seconds
+from ielts_tts.parser import NARRATOR, parse, parse_test, pause_seconds
 
 SAMPLE = (Path(__file__).resolve().parent.parent / "library" / "part1-harbourview-bike-tours.txt").read_text(encoding="utf-8")
 
 
 class SampleScript(unittest.TestCase):
     def setUp(self):
-        self.test = parse(SAMPLE)
+        self.test = parse_test(SAMPLE, "part1")
 
     def test_title_and_speakers(self):
         self.assertEqual(self.test.title, "Part 1 – Harbourview Bike Tours")
         self.assertEqual(self.test.speakers, ["Sam", "Clara"])
+        self.assertEqual(self.test.voice_overrides["Clara"], "bf_emma")
 
     def test_narrator_lines(self):
         narrated = [s.text for s in self.test.segments if s.speaker == NARRATOR]
-        self.assertEqual(narrated[0], "You will hear a woman phoning a bike tour company to book a tour.")
-        self.assertIn("You now have 30 seconds to look at questions 7 to 10.", narrated)
+        self.assertEqual(narrated[0], "Part 1. You will hear a woman phoning a bike tour company to book a tour.")
+        self.assertIn("Before you hear the rest of the conversation, you have some time to look at questions 7 to 10.",
+                      narrated)
         self.assertEqual(narrated[-1], "That is the end of Part 1.")
 
-    def test_pause_is_real_silence_after_announcement(self):
-        pauses = [i for i, s in enumerate(self.test.segments) if s.kind == "pause"]
-        self.assertEqual(len(pauses), 1)
-        self.assertEqual(self.test.segments[pauses[0]].seconds, 30)
-        self.assertEqual(self.test.segments[pauses[0] - 1].speaker, NARRATOR)
+    def test_reading_time_pauses(self):
+        pauses = [s for s in self.test.segments if s.kind == "pause"]
+        self.assertEqual([p.seconds for p in pauses], [30, 30])
 
-    def test_questions_and_answers(self):
+    def test_questions_answers_and_sets(self):
         self.assertEqual(self.test.question_numbers, list(range(1, 11)))
         self.assertEqual(self.test.answers["1"], "Whitfield")
+        self.assertEqual([(s["start"], s["end"], s["type"]) for s in self.test.sets], [(1, 6, "form"), (7, 10, "note")])
+        self.assertEqual(self.test.sets[0]["limit"], {"words": 1, "number": True})
         self.assertEqual(self.test.warnings, [])
 
-    def test_recording_script_header_not_read(self):
-        self.assertFalse(any("Recording script" in s.text for s in self.test.segments))
+    def test_part_marker_is_not_read_aloud(self):
+        self.assertFalse(any("PART" in s.text for s in self.test.segments))
+        self.assertEqual(parse(SAMPLE).title, "Part 1 – Harbourview Bike Tours")
+
+
+class LegacyFormat(unittest.TestCase):
+    def test_v1_announced_pause(self):
+        t = parse("You will hear a call.\nSam: Hi\n[Pause: you now have 30 seconds to look at questions 7 to 10.]\nSam: Bye")
+        kinds = [(s.kind, s.speaker, s.seconds) for s in t.segments]
+        self.assertEqual(kinds, [("speech", NARRATOR, 0), ("speech", "Sam", 0), ("speech", NARRATOR, 0),
+                                 ("pause", "", 30), ("speech", "Sam", 0)])
 
 
 class Formats(unittest.TestCase):
@@ -79,3 +90,32 @@ class Formats(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class MultiPart(unittest.TestCase):
+    def test_parse_full_test(self):
+        from ielts_tts.parser import parse_test
+        script = (Path(__file__).resolve().parent.parent / "library" / "full-test-1.txt").read_text(encoding="utf-8")
+        t = parse_test(script, "full")
+        self.assertEqual(t.kind, "full")
+        self.assertEqual({s.part for s in t.segments}, {1, 2, 3, 4})
+        self.assertTrue(t.title.startswith("Full Test 1"))
+        self.assertIn("map", {s["type"] for s in t.sets})
+
+    def test_missing_transitions_are_added(self):
+        from ielts_tts.parser import parse_test
+        script = "### PART 1\nA: Hi\nB: Hello\n### PART 2\nGuide: Welcome\n### PART 3\nA: x\n### PART 4\nL: y"
+        t = parse_test(script, "full")
+        auto = [s for s in t.segments if s.auto]
+        self.assertEqual(len([s for s in auto if s.kind == "pause"]), 3)
+        self.assertIn("That is the end of Part 1", auto[0].text)
+
+    def test_outer_code_fence_is_ignored(self):
+        from ielts_tts.parser import parse_test
+        t = parse_test("```text\n### PART 2\nGuide: Hello there\n```", "part2")
+        self.assertEqual([s.text for s in t.segments], ["Hello there"])
+
+    def test_tilde_fence_contents_are_not_questions(self):
+        from ielts_tts.parser import parse_test
+        t = parse_test("Guide: Hi\n=== QUESTIONS ===\n@SET 15-16 | map | Label the map below. Write the correct letter, A–E, next to Questions 15–16.\n~~~\n 12. not a question ________\n~~~\n15. Cafe ________\n16. Shop ________\n=== ANSWERS ===\n15. A\n16. B", "part2")
+        self.assertEqual(t.question_numbers, [15, 16])

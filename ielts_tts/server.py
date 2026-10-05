@@ -8,9 +8,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-from . import grader, voices
+from . import grader, prompt_builder, voices
 from .engine import Engine, Jobs, ModelMissing, public_meta, _slug
-from .parser import parse
+from .parser import SET_TYPES, detect_task, parse_test
+from .validator import TASK_PARTS, validate
 
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = Path(__file__).resolve().parent / "static"
@@ -29,6 +30,19 @@ class App:
         if self.engine.ready:
             return {v["id"] for v in self.engine.voices()}
         return set(voices.FEMALE_ORDER + voices.MALE_ORDER + [voices.DEFAULT_NARRATOR])
+
+
+def prepare(body: dict, available):
+    """Parse + validate a pasted script for the page it was pasted on."""
+    page = body.get("kind") or "custom"
+    page = page if page in TASK_PARTS else "custom"
+    test = parse_test(body.get("script", ""), page)
+    detected = detect_task(test)
+    if page == "custom":
+        test.kind = detected
+    checks = validate(test, page)
+    cast = voices.assign(test.speakers, available, test.voice_overrides)
+    return test, page, detected, checks, cast
 
 
 def _history_path():
@@ -141,12 +155,15 @@ def make_handler(app: App):
                     job = app.jobs.get(m.group(1))
                     return self.send_json(job) if job else self.error("No such job", 404)
                 if path == "/api/tests":
-                    tests = []
+                    tests, history = [], load_history()
                     for meta_path in sorted(app.engine.output_dir.glob("*.json"),
                                             key=lambda p: p.stat().st_mtime, reverse=True):
                         meta = json.loads(meta_path.read_text(encoding="utf-8"))
                         tests.append({"id": meta["id"], "title": meta["title"], "duration": meta["duration"],
                                       "created": meta["created"], "questions": len(meta["question_numbers"]),
+                                      "kind": meta.get("kind", "custom"),
+                                      "best": max((h["score"] for h in history if h.get("id") == meta["id"]),
+                                                  default=None),
                                       "voices": " / ".join(v.split("_", 1)[-1].capitalize()
                                                            for k, v in meta["cast"].items() if k != "Narrator")})
                     return self.send_json({"tests": tests})
@@ -162,14 +179,32 @@ def make_handler(app: App):
                 if path == "/api/library":
                     items = []
                     for f in sorted(LIBRARY.glob("*.txt")):
-                        title = parse(f.read_text(encoding="utf-8")).title
-                        items.append({"file": f.name, "title": title})
+                        test = parse_test(f.read_text(encoding="utf-8"))
+                        items.append({"file": f.name, "title": test.title, "kind": detect_task(test)})
                     return self.send_json({"items": items})
                 if m := re.fullmatch(r"/api/library/([\w.-]+\.txt)", path):
                     f = LIBRARY / m.group(1)
                     if not f.is_file():
                         return self.error("Not found", 404)
                     return self.send_json({"file": f.name, "script": f.read_text(encoding="utf-8")})
+                if path == "/api/tasks":
+                    return self.send_json({
+                        "tasks": {t: {"focus": prompt_builder.focus_options(t)} for t in prompt_builder.TASKS},
+                        "difficulty": [{"id": k, "label": prompt_builder.DIFFICULTY_LABELS[k]} for k in prompt_builder.DIFFICULTY],
+                        "types": SET_TYPES,
+                    })
+                if path == "/api/prompt":
+                    q = {k: v[0] for k, v in query.items()}
+                    if q.get("task") not in prompt_builder.TASKS:
+                        return self.error("Unknown task")
+                    return self.send_json(prompt_builder.build(
+                        q["task"], topic=q.get("topic", ""), focus=q.get("focus", "mix"),
+                        difficulty=q.get("difficulty", "7-8"), accent=q.get("accent", "british")))
+                if path == "/api/topic":
+                    task = (query.get("task") or [""])[0]
+                    if task not in prompt_builder.TASKS or task == "full":
+                        return self.error("Unknown task")
+                    return self.send_json({"topic": prompt_builder.random_topic(task)})
                 if path == "/api/history":
                     return self.send_json({"history": load_history()})
                 return self.error("Not found", 404)
@@ -184,15 +219,17 @@ def make_handler(app: App):
                 return self.error("Invalid JSON")
             try:
                 if path == "/api/parse":
-                    test = parse(body.get("script", ""))
-                    cast = voices.assign(test.speakers, app.available_voices(), test.voice_overrides)
-                    return self.send_json({"test": test.to_dict(), "cast": cast})
+                    test, page, detected, checks, cast = prepare(body, app.available_voices())
+                    return self.send_json({"test": test.to_dict(), "cast": cast, "checks": checks,
+                                           "detected": detected})
                 if path == "/api/render":
-                    test = parse(body.get("script", ""))
+                    available = app.available_voices()
+                    test, page, detected, checks, cast = prepare(body, available)
                     if not any(s.kind == "speech" for s in test.segments):
                         return self.error("Nothing to read. Paste a script first.")
-                    available = app.available_voices()
-                    cast = voices.assign(test.speakers, available, test.voice_overrides)
+                    if page != "custom" and not checks["ok"]:
+                        return self.error("The script doesn't match the exam format yet. Fix the ❌ items "
+                                          "in the checklist (or ask Claude to fix them) and try again.")
                     cast.update({k: v for k, v in (body.get("cast") or {}).items() if v in available})
                     app.engine.kokoro()             # fail fast with a friendly message if no model
                     return self.send_json({"job": app.jobs.start(test, cast)})
@@ -200,7 +237,7 @@ def make_handler(app: App):
                     script = body.get("script", "")
                     if not script.strip():
                         return self.error("Nothing to save.")
-                    name = body.get("file") or f"{_slug(parse(script).title)}.txt"
+                    name = body.get("file") or f"{_slug(parse_test(script).title)}.txt"
                     if not re.fullmatch(r"[\w.-]+\.txt", name):
                         return self.error("Bad file name")
                     LIBRARY.mkdir(exist_ok=True)
@@ -213,11 +250,12 @@ def make_handler(app: App):
                     if not meta.get("answers"):
                         return self.error("This test has no === ANSWERS === section to mark against.")
                     result = grader.grade(meta["answers"], body.get("answers") or {},
-                                          meta.get("answer_groups"))
+                                          meta.get("answer_groups"), meta.get("sets"))
                     history = load_history()
                     history.append({"date": time.strftime("%Y-%m-%d %H:%M"), "id": meta["id"],
-                                    "title": meta["title"], "score": result["score"],
-                                    "total": result["total"], "band": result["band"]})
+                                    "title": meta["title"], "kind": meta.get("kind", "custom"),
+                                    "score": result["score"], "total": result["total"], "band": result["band"],
+                                    "by_type": result["by_type"], "by_part": result["by_part"]})
                     RESULTS.mkdir(exist_ok=True)
                     _history_path().write_text(json.dumps(history, indent=1, ensure_ascii=False),
                                                encoding="utf-8")
