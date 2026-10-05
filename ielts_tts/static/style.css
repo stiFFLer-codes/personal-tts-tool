@@ -156,6 +156,8 @@ button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-
 .guide-cols ul, .guide-cols ol { margin: 0; padding-left: 1.1rem; font-size: .92rem; }
 .guide-cols li { margin: .25rem 0; }
 .step-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .9rem; }
+.step-head .push { min-width: 0; max-width: 100%; }
+.step-head .push select { min-width: 0; flex: 1 1 auto; width: 16rem; }
 .step-no { display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: .9rem; flex: none; }
 .form-grid { display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr; gap: .8rem; margin-bottom: .8rem; }
 .field { display: flex; flex-direction: column; gap: .3rem; font-size: .8rem; font-weight: 600; color: var(--muted); min-width: 0; }
@@ -330,6 +332,7 @@ table.answers tr.miss td:first-child { box-shadow: inset 3px 0 var(--bad); }
   .nav a span { display: none; }
   .nav a[data-route="home"] span, .nav a[data-route="full"] span { display: none; }
   .form-grid { grid-template-columns: minmax(0, 1fr); }
+  .step-head .push { margin-left: 0; width: 100%; }
   .card { padding: .9rem; }
   .cast-row { grid-template-columns: 1fr auto; }
   .cast-row select { grid-column: 1 / -1; grid-row: 2; }
