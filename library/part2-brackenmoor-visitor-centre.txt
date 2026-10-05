@@ -1,0 +1,79 @@
+### PART 2
+Title: Part 2 – Brackenmoor Visitor Centre
+Voices: Narrator=bm_george, Ranger=bf_isabella
+Narrator: Part 2. You will hear a park ranger talking to a group of visitors about the trails and facilities at a national park visitor centre.
+Narrator: First, you have some time to look at questions 11 to 14.
+[Pause 30]
+Narrator: Now listen carefully and answer questions 11 to 14.
+Ranger: Good morning, everyone, and welcome to the Hollinsworth Visitor Centre here in Brackenmoor National Park. I'm Jess, one of the rangers here, and I'll just take a few minutes to tell you what's on offer.
+Ranger: Right, first, a few changes since last season. Lots of people have asked whether the café's open again. Well, it was supposed to reopen this month after the refit, but the work's running late, so it won't be serving until the spring. Our opening hours haven't changed either. We're still open from nine till five. We did look into staying open later in the summer, but we simply didn't have the staff. What is new, though, is parking. Until the end of last month you had to buy a ticket from the machine, but the park authority's scrapped that, so you can leave your car here all day and it won't cost you a penny.
+Ranger: Now, the trails. There are three waymarked routes from the centre. The shortest is the Lakeside Trail, about two and a half kilometres. People often assume it's ideal for families with little ones, but honestly, young children tend to get bored. It's completely flat, and there are no streams to paddle in. And if you're keen on birds, you'll see far more on the Fernhill Trail through the woods. What makes the Lakeside Trail special is that it has a firm, smooth surface the whole way round, with no steps or stiles, so it's the one I'd really suggest if you use a wheelchair or find walking difficult.
+Ranger: Then there's the Summit Trail, with its steep climb up to Raven Crag. We used to insist that everyone heading up there took one of our paper maps, but the route's now marked with posts every few hundred metres, so that's no longer necessary. You can borrow walking poles from reception, though most people manage fine without them. What we do ask, um, is that before you set off, you write your name and the time you expect to be back in the book on the front desk. That way, if the weather turns and you haven't returned, we know to come looking.
+Ranger: Finally, we run a guided bat walk on Friday evenings. It used to start at half past seven, but in summer it's still too light then for the bats to come out, so it now begins at nine o'clock. It's six pounds for adults, and under-twelves pay half that. Last Friday's walk was called off because of the storm, but this week's is going ahead as normal.
+Narrator: Before you hear the rest of the talk, you have some time to look at questions 15 to 20.
+[Pause 30]
+Narrator: Now listen and answer questions 15 to 20.
+Ranger: Right, if you look at the map I've given you, I'll show you where everything is. We're at the star, just outside the main entrance, facing up the main path towards the lake.
+Ranger: Let's start with bike hire. Until last year, the bikes were kept in the wooden hut on your left, between here and the car park, but that's just a storeroom now. You'll find cycle hire right beside us on the other side, in the building joined onto the end of the visitor centre.
+Ranger: Now, as you walk up the main path towards the crossroads, you'll see a fenced area on your right where we grow young trees for replanting, but that isn't open to the public. Opposite that, on your left, is the picnic shelter. It's got a roof, so it's handy if it rains.
+Ranger: At the crossroads, turning left takes you west towards the Old Barn. A lot of visitors assume the first aid post is inside the barn, but actually the barn's only used by school groups. The first aid post is a small green hut about halfway between the crossroads and the barn, on the right-hand side of the path. It's staffed at weekends, and on weekdays there's a phone there that connects you straight to us.
+Ranger: Turn right at the crossroads instead, and you're on the Summit Trail. Follow that path to the end and you'll reach the gate where the real climb begins, but there's nothing there apart from a bench. The adventure playground is much nearer. It's the first thing you'll come to, on your left. It's designed for under-tens, and there's a separate area with swings for toddlers.
+Ranger: And if you go straight over the crossroads, the main path leads up to the lake and joins the Lakeside Trail. Turn left there and follow the shore to the western end, and you'll find the bird hide, tucked in among the reeds. It's a lovely spot early in the morning, when the herons are feeding. Some of you may remember the old hide at the eastern end of the lake, but it was taken down last winter because the wood had rotted.
+Ranger: In its place, we've put up a new toilet block, which is worth knowing about, because there aren't any other toilets once you've left the centre.
+Ranger: Right, that's everything from me. Enjoy your day.
+Narrator: That is the end of Part 2.
+=== QUESTIONS ===
+@SET 11-14 | mcq | Choose the correct letter, A, B or C.
+11. What change at the visitor centre does the ranger mention?
+A  The café is serving food again.
+B  Visitors no longer have to pay to park.
+C  The building now stays open later.
+12. The ranger particularly recommends the Lakeside Trail for
+A  families with young children.
+B  people interested in birdwatching.
+C  visitors with limited mobility.
+13. What are walkers on the Summit Trail asked to do?
+A  sign in at reception before starting
+B  carry a printed map
+C  borrow walking poles
+14. What does the ranger say about the guided bat walk?
+A  It is free for children under twelve.
+B  This week's walk has been cancelled.
+C  Its start time has been moved later.
+@SET 15-20 | map | Label the map below. Write the correct letter, A–I, next to Questions 15–20.
+~~~
+                               N
+                               ↑
++------------------------------------------------------------+
+|                                                            |
+|   [E]   ..................................   [G]           |
+|    |    .            L A K E             .    |            |
+|    |    ..................................    |            |
+|    +--- Lakeside Trail ------+----------------+            |
+|                              |                             |
+|              [H]             |    [C]                      |
+| OLD BARN --------------------+-------------------- [I] --> |
+|                              |      Summit Trail           |
+|         [F]                  |         [B]                 |
+|                              |  Main Path                  |
+|                              ★  You are here               |
+| CAR PARK    [A]       VISITOR CENTRE     [D]               |
++------------------------------------------------------------+
+~~~
+15. Cycle hire ________
+16. Picnic shelter ________
+17. First aid post ________
+18. Adventure playground ________
+19. Bird hide ________
+20. Toilets ________
+=== ANSWERS ===
+11. B
+12. C
+13. A
+14. C
+15. D
+16. F
+17. H
+18. C
+19. E
+20. G

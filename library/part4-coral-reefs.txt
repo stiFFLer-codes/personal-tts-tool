@@ -1,0 +1,47 @@
+### PART 4
+Title: Part 4 – Coral Reefs
+Voices: Narrator=bm_george, Lecturer=bf_alice
+Narrator: Part 4. You will hear a lecturer giving a talk to biology students about how coral reefs form and the threats they face.
+Narrator: First, you have some time to look at questions 31 to 40.
+[Pause 45]
+Narrator: Now listen carefully and answer questions 31 to 40.
+Lecturer: Good morning, everyone. Today we're continuing our unit on marine ecosystems by looking at coral reefs. Now, reefs cover well under one per cent of the ocean floor, and yet they support roughly a quarter of all marine species, which is why they're sometimes called the rainforests of the sea. I'm going to begin by explaining how a reef actually forms. Then I'll describe the three main types of reef, and after that I'll turn to the threats they're facing, drawing on some recent fieldwork. Right, let's get started.
+Lecturer: Let's start with the builders themselves. A reef might look like a landscape of colourful rock, and it's easy to assume that coral is some kind of plant. But in fact, it's an animal. The basic unit is the polyp, a soft-bodied creature usually only a few millimetres across. Each polyp has a mouth at the top, and around that mouth is a ring of tentacles, which it extends at night to catch passing plankton.
+Lecturer: What makes polyps so remarkable is what they produce. They draw calcium and carbonate out of the seawater and use them to secrete a hard cup around the lower half of their bodies. Chemically, that cup is calcium carbonate, so, in other words, it's limestone. And over thousands of years, as each new generation of polyps grows on top of the skeletons of the last, these cups build up into the enormous structures we call reefs.
+Lecturer: Now, you might reasonably expect those tentacles to provide most of the polyp's food. Actually, they don't. Living inside the polyp's tissue are microscopic algae, and through photosynthesis these supply the coral with up to ninety per cent of the energy it needs. It's a classic example of symbiosis. And because the algae need sunlight, reef-building corals can only survive in clear, shallow water.
+Lecturer: One more point: reef formation is extraordinarily slow. I've seen reef growth compared to the growth of grass, but, um, that's far too generous. A much more accurate comparison for many of the larger corals would be your fingernails, which grow only a few centimetres a year at most. So a reef you snorkel over today may have taken thousands of years to form.
+Lecturer: Turning now to the different types of reef. The simplest is the fringing reef, which grows right up against the shoreline. A barrier reef, on the other hand, lies further out, and it's cut off from the land by a stretch of water. Some textbooks call this a channel, which is rather misleading, since it's frequently several kilometres wide. The correct term is a lagoon, and these are typically calm and sheltered.
+Lecturer: The third type, the atoll, is a roughly circular ring of coral with open water in the middle. For a long time, people assumed atolls grew on top of sandbanks, or that waves had gradually worn away an island in the centre. The accepted explanation is rather different. A fringing reef first develops around the edge of a volcano. Over millions of years, the volcano slowly sinks, but the coral keeps growing upwards, leaving just a ring of reef.
+Lecturer: Right, on to the threats. The most widely reported is bleaching. When water stays even slightly warmer than normal for several weeks, corals become stressed and expel the algae living in their tissue. People often assume bleached coral is dead. It isn't, and if temperatures drop quickly, the algae can return. The coral depends on them for most of its food, though, so if the heat continues, it eventually dies of starvation.
+Lecturer: Another key factor is the changing chemistry of the ocean. Seawater absorbs a large share of the carbon dioxide we release, and this makes it more acidic. That has two consequences. First, corals need more energy to build their skeletons, so they grow more slowly. Second, and perhaps more worrying, the skeletons they do produce are far more brittle, which means storms can break them apart much more easily.
+Lecturer: Then there's pollution from the land. Heavy rain washes soil into the sea, where it settles on the coral and smothers the polyps. Researchers from the Fenmoor Marine Institute spent three years monitoring reefs off Pellan Island. They'd expected coastal construction to be the main culprit, because of all the new hotels, and logging in the hills played a part too. But when they traced the sediment to its source, by far the largest share came from agriculture, especially fields left bare between harvests.
+Lecturer: Finally, overfishing. This might seem less obvious, because most of the fish being caught don't eat coral at all. The problem is that species like parrotfish are grazers, constantly feeding on the plants that compete with corals for space. Fishermen around Pellan initially blamed disease for the decline, but once the grazers had gone, it was seaweed that spread across the reef, blocking the light and stopping young corals from settling.
+Lecturer: So, to sum up, reefs are built incredibly slowly by tiny animals working in partnership with algae, and they're now under pressure from several directions at once. There is some cause for hope, though. Projects that grow coral fragments in underwater nurseries and then replant them have had encouraging results, and protecting grazing fish seems to make reefs noticeably more resilient. Next week, we'll look at some of these restoration projects in more detail. Thanks very much.
+Narrator: That is the end of Part 4.
+=== QUESTIONS ===
+@SET 31-40 | note | Complete the notes below. Write ONE WORD ONLY for each answer.
+Coral Reefs: Formation and Threats
+How reefs form
+– coral is an animal; each polyp traps plankton using a circle of 31 ________
+– polyps produce a cup-shaped skeleton made of 32 ________
+– tiny 33 ________ within the coral's tissue supply most of its nutrition
+– many corals grow at roughly the same rate as 34 ________
+Types of reef
+– barrier reef: separated from the shore by a 35 ________, often several kilometres across
+– atoll: a ring of coral that remains once the central 36 ________ has subsided
+Main threats
+– bleaching: affected coral is still alive but may die from 37 ________ if high temperatures persist
+– acidification: slower growth and more 38 ________ skeletons, which storms can easily damage
+– Pellan Island study: main source of sediment was 39 ________
+– overfishing: removal of grazers allows 40 ________ to take over the reef
+=== ANSWERS ===
+31. tentacles
+32. limestone
+33. algae
+34. fingernails
+35. lagoon
+36. volcano
+37. starvation
+38. brittle
+39. agriculture
+40. seaweed

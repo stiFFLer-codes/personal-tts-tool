@@ -154,8 +154,7 @@ class Engine:
         if meta_path.exists() and (self.output_dir / f"{test_id}.wav").exists():
             # Same audio; the question paper or answer key may have been edited since.
             meta = json.loads(meta_path.read_text(encoding="utf-8"))
-            meta.update(title=test.title, questions=test.questions, question_numbers=test.question_numbers,
-                        answers=test.answers, answer_groups=test.answer_groups)
+            meta.update(title=test.title, **_paper(test, meta["timeline"]))
             meta_path.write_text(json.dumps(meta, indent=1, ensure_ascii=False), encoding="utf-8")
             return meta
 
@@ -167,7 +166,7 @@ class Engine:
                 pieces.append(_silence(seg.seconds))
                 timeline.append({"i": index, "kind": "pause", "speaker": "", "text": seg.text,
                                  "seconds": seg.seconds, "start": round(cursor, 3),
-                                 "end": round(cursor + seg.seconds, 3), "line": seg.line})
+                                 "end": round(cursor + seg.seconds, 3), "line": seg.line, "part": seg.part})
                 cursor += seg.seconds
                 previous = None
                 continue
@@ -184,7 +183,8 @@ class Engine:
             pieces.append(audio)
             length = len(audio) / SAMPLE_RATE
             timeline.append({"i": index, "kind": "speech", "speaker": seg.speaker, "text": seg.text,
-                             "start": round(cursor, 3), "end": round(cursor + length, 3), "line": seg.line})
+                             "start": round(cursor, 3), "end": round(cursor + length, 3), "line": seg.line,
+                             "part": seg.part})
             cursor += length
             previous = seg.speaker
             done += 1
@@ -201,10 +201,7 @@ class Engine:
             "duration": round(len(samples) / SAMPLE_RATE, 2),
             "cast": cast,
             "timeline": timeline,
-            "questions": test.questions,
-            "question_numbers": test.question_numbers,
-            "answers": test.answers,
-            "answer_groups": test.answer_groups,
+            **_paper(test, timeline),
             "created": time.strftime("%Y-%m-%d %H:%M"),
         }
         meta_path.write_text(json.dumps(meta, indent=1, ensure_ascii=False), encoding="utf-8")
@@ -227,6 +224,17 @@ class Engine:
             subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav),
                             "-codec:a", "libmp3lame", "-q:a", "4", str(mp3)], check=True)
         return mp3
+
+
+def _paper(test: Test, timeline: list) -> dict:
+    """Question paper, answer key and per-Part layout (with each Part's audio span)."""
+    parts = []
+    for info in test.parts:
+        items = [t for t in timeline if t.get("part") == info["n"]]
+        parts.append({**info, "start": items[0]["start"] if items else 0,
+                      "end": items[-1]["end"] if items else 0})
+    return {"kind": test.kind, "questions": test.questions, "question_numbers": test.question_numbers,
+            "answers": test.answers, "answer_groups": test.answer_groups, "sets": test.sets, "parts": parts}
 
 
 def public_meta(meta: dict) -> dict:

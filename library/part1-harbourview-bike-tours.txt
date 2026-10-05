@@ -1,6 +1,10 @@
+### PART 1
 Title: Part 1 – Harbourview Bike Tours
-Recording script
-You will hear a woman phoning a bike tour company to book a tour.
+Voices: Narrator=bm_george, Sam=bm_fable, Clara=bf_emma
+Narrator: Part 1. You will hear a woman phoning a bike tour company to book a tour.
+Narrator: First, you have some time to look at questions 1 to 6.
+[Pause 30]
+Narrator: Now listen carefully and answer questions 1 to 6.
 Sam: Good morning, Harbourview Bike Tours, Sam speaking. How can I help?
 Clara: Oh hi. I'm calling to book a tour for a group of friends. I tried doing it on your website, but it kept crashing at the payment page.
 Sam: Sorry about that, we're having some trouble with it this week. I can take the booking over the phone, no problem. Can I start with your name?
@@ -30,7 +34,9 @@ Clara: OK, I'll tell everyone.
 Sam: Will you need any extra equipment? Helmets are included for everyone.
 Clara: Yes, actually. For the little boy, we'll need a child seat on one of the bikes.
 Sam: A seat, no problem. I've noted that down.
-[Pause: you now have 30 seconds to look at questions 7 to 10.]
+Narrator: Before you hear the rest of the conversation, you have some time to look at questions 7 to 10.
+[Pause 30]
+Narrator: Now listen and answer questions 7 to 10.
 Clara: Is there anything we should bring?
 Sam: The weather changes really quickly on the coast, so everyone should bring a waterproof jacket. Umbrellas aren't much use on a bike. And we provide water bottles, so don't worry about those.
 Clara: What about food?
@@ -40,11 +46,10 @@ Sam: The full price is forty-two pounds per person. We ask for a deposit of fift
 Clara: Fair enough. When do you need that by?
 Sam: Normally we'd ask for it within two days, so that'd be Wednesday, but since the website's down I'll give you until Friday.
 Clara: That's really kind. Thanks so much.
-That is the end of Part 1.
+Narrator: That is the end of Part 1.
 
 === QUESTIONS ===
-Questions 1–6
-Complete the form below. Write ONE WORD AND/OR A NUMBER for each answer.
+@SET 1-6 | form | Complete the form below. Write ONE WORD AND/OR A NUMBER for each answer.
 
 HARBOURVIEW BIKE TOURS – BOOKING FORM
 Name: Clara 1 ________
@@ -54,8 +59,7 @@ Route: the 4 ________ Trail
 Meeting point: outside the 5 ________
 Extra equipment: a child 6 ________
 
-Questions 7–10
-Complete the notes below. Write ONE WORD AND/OR A NUMBER for each answer.
+@SET 7-10 | note | Complete the notes below. Write ONE WORD AND/OR A NUMBER for each answer.
 
 Bring: a waterproof 7 ________
 Lunch: in the garden of the old 8 ________ house

@@ -8,180 +8,238 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">🎧 <span>IELTS Listening Studio</span></div>
-    <nav class="tabs" role="tablist">
-      <button class="tab active" data-tab="studio" role="tab">Studio</button>
-      <button class="tab" data-tab="practice" role="tab">Practice</button>
-      <button class="tab" data-tab="exam" role="tab">Exam</button>
-      <button class="tab" data-tab="progress" role="tab">Progress</button>
-    </nav>
-    <div id="status" class="pill">…</div>
-  </header>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">🎧 <span>IELTS Listening Studio</span></div>
+      <nav class="nav" aria-label="Sections">
+        <a href="#home" data-route="home">🏠 <span>Home</span></a>
+        <div class="nav-group">Tasks</div>
+        <a href="#part1" data-route="part1"><b>1</b> <span>Part 1 · Conversation</span></a>
+        <a href="#part2" data-route="part2"><b>2</b> <span>Part 2 · Monologue</span></a>
+        <a href="#part3" data-route="part3"><b>3</b> <span>Part 3 · Discussion</span></a>
+        <a href="#part4" data-route="part4"><b>4</b> <span>Part 4 · Lecture</span></a>
+        <a href="#full" data-route="full">🏁 <span>Full Test</span></a>
+        <div class="nav-group">Train</div>
+        <a href="#practice" data-route="practice">🎧 <span>Practice</span></a>
+        <a href="#exam" data-route="exam">📝 <span>Exam</span></a>
+        <a href="#progress" data-route="progress">📈 <span>Progress</span></a>
+      </nav>
+      <div id="status" class="pill">…</div>
+    </aside>
 
-  <div id="model-banner" class="banner warn" hidden>
-    <strong>Voice model not downloaded yet.</strong>
-    Run <code>setup.bat</code> once (or <code>python -m ielts_tts.download_models</code>), then restart the app.
-    You can still paste and check scripts meanwhile.
-  </div>
-
-  <main>
-    <!-- ============================ STUDIO ============================ -->
-    <section id="tab-studio" class="view active">
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-head">
-            <h2>Script</h2>
-            <div class="row gap">
-              <select id="library-select" title="Open a saved script"><option value="">📚 Library…</option></select>
-              <button id="btn-save" class="ghost" title="Save this script to the library folder">💾 Save</button>
-              <button id="btn-clear" class="ghost" title="Start a new script">✨ New</button>
-            </div>
-          </div>
-          <textarea id="script" spellcheck="false" placeholder="Paste a listening script here…
-
-Title: Part 1 – Booking a bike tour
-You will hear a woman phoning a bike tour company.
-Sam: Good morning, Harbourview Bike Tours…
-Clara: Hi, I'd like to book a tour…
-[Pause: you now have 30 seconds to look at questions 7 to 10.]
-
-=== QUESTIONS ===
-Name: Clara 1 ________
-
-=== ANSWERS ===
-1. Whitfield"></textarea>
-          <details class="cheatsheet">
-            <summary>Script format cheat-sheet</summary>
-            <ul>
-              <li><code>Name: text</code>, a speaker line. Lines with no label are read by the <b>Narrator</b>.</li>
-              <li><code>[Pause: you now have 30 seconds to look at questions 7 to 10.]</code>: narrator reads it, then <b>real 30 s silence</b>. <code>[Pause 5]</code> = silence only.</li>
-              <li><code>W-H-I-T-F-I-E-L-D</code> is spelled out letter by letter; phone numbers are read digit by digit.</li>
-              <li><code>Title: …</code> and <code>Voices: Sam=bm_lewis, Clara=bf_emma</code> are optional header lines.</li>
-              <li><code>=== QUESTIONS ===</code>: shown during the exam. Gaps like <code>1 ________</code> become answer boxes.</li>
-              <li><code>=== ANSWERS ===</code>: <code>2. 23(rd) | twenty-third</code>. <code>|</code> = alternatives, <code>( )</code> = optional, <code>21-22. B, D</code> = any order.</li>
-              <li>Need scripts? Use the prompt in <code>docs/CLAUDE_SCRIPT_PROMPT.md</code> with Claude.</li>
-            </ul>
-          </details>
-        </div>
-
-        <div class="card">
-          <div class="card-head"><h2 id="parsed-title">Cast &amp; generate</h2></div>
-          <div id="stats" class="chips"></div>
-          <div id="cast" class="cast"></div>
-          <ul id="warnings" class="warnings"></ul>
-          <button id="btn-generate" class="primary big" disabled>🎙️ Generate audio</button>
-          <div id="progress" class="progress" hidden><div class="bar"></div><span class="label"></span></div>
-          <div id="render-result" class="result" hidden>
-            <div class="result-title">✅ <span id="result-text"></span></div>
-            <div class="row gap wrap">
-              <button class="primary" data-goto="practice">🎧 Practise</button>
-              <button class="primary alt" data-goto="exam">📝 Take as exam</button>
-              <a id="dl-wav" class="button ghost" download>⬇ WAV</a>
-              <a id="dl-mp3" class="button ghost" hidden>⬇ MP3</a>
-            </div>
-          </div>
-          <h3 class="subhead">Recent recordings</h3>
-          <ul id="recent" class="recent"></ul>
-        </div>
+    <main>
+      <div id="model-banner" class="banner warn" hidden>
+        <strong>Voice model not downloaded yet.</strong>
+        Run <code>setup.bat</code> once (or <code>python -m ielts_tts.download_models</code>), then restart the app.
+        You can still build prompts and check scripts meanwhile.
       </div>
-    </section>
 
-    <!-- ============================ PRACTICE ============================ -->
-    <section id="tab-practice" class="view">
-      <div class="empty" data-empty>Generate a recording in <b>Studio</b> first, or pick one: <select class="test-picker"></select></div>
-      <div data-loaded hidden>
-        <div class="card player">
-          <div class="row between wrap gap">
-            <h2 class="test-title"></h2>
-            <select class="test-picker" title="Switch recording"></select>
-          </div>
-          <div class="controls">
-            <button id="p-prev" class="icon" title="Previous line (←)">⏮</button>
-            <button id="p-play" class="icon play" title="Play / pause (Space)">▶</button>
-            <button id="p-next" class="icon" title="Next line (→)">⏭</button>
-            <button id="p-replay" class="icon" title="Replay current line (R)">↻</button>
-            <button id="p-loop" class="icon toggle" title="Loop current line (L)">⟲</button>
-            <span id="p-time" class="time">0:00 / 0:00</span>
-            <input id="p-seek" type="range" min="0" max="1000" value="0" aria-label="Seek">
-            <label class="speed">Speed
-              <select id="p-speed">
-                <option value="0.75">0.75×</option><option value="0.9">0.9×</option>
-                <option value="1" selected>1×</option><option value="1.1">1.1×</option><option value="1.25">1.25×</option>
+      <!-- ============================ HOME ============================ -->
+      <section id="view-home" class="view">
+        <header class="page-head">
+          <h1>Master IELTS Listening, one Part at a time</h1>
+          <p class="muted">Pick a Part to drill, or sit a Full Test. Each task gives you an exam-accurate prompt for
+            Claude, turns Claude's script into exam audio and marks you like the real test.</p>
+        </header>
+        <div id="task-cards" class="task-cards"></div>
+        <div class="card how">
+          <h3>How it works</h3>
+          <ol class="steps">
+            <li><b>Copy the prompt</b> on a task page (pick a topic and question type, or keep the real exam mix).</li>
+            <li><b>Paste it into Claude.</b> Claude replies with one code block: script, questions and answer key.</li>
+            <li><b>Paste Claude's reply</b> back into the task page. The format checklist makes sure it matches the real exam.</li>
+            <li><b>Generate</b> the audio, then sit it in <b>Exam</b> mode (plays once) and review in <b>Practice</b>.</li>
+          </ol>
+          <p class="muted small">Have a script from somewhere else? <a href="#custom">Use the custom script page →</a></p>
+        </div>
+      </section>
+
+      <!-- ============================ TASK (Part 1–4, Full, Custom) ============================ -->
+      <section id="view-task" class="view">
+        <header class="page-head">
+          <div class="eyebrow" id="t-eyebrow"></div>
+          <h1 id="t-title"></h1>
+          <p id="t-lede" class="muted"></p>
+        </header>
+
+        <div id="t-guide" class="card guide"></div>
+
+        <div class="card step" id="t-step-prompt">
+          <div class="step-head"><span class="step-no">1</span><h2>Get a script from Claude</h2></div>
+          <div class="form-grid">
+            <label class="field wide" id="t-topic-field">Topic
+              <div class="row gap">
+                <input id="t-topic" type="text" placeholder="Leave empty for a random exam topic">
+                <button id="t-dice" class="ghost" title="Random topic">🎲</button>
+              </div>
+            </label>
+            <label class="field" id="t-focus-field">Question types
+              <select id="t-focus"></select>
+            </label>
+            <label class="field">Difficulty
+              <select id="t-difficulty"></select>
+            </label>
+            <label class="field">Accents
+              <select id="t-accent">
+                <option value="british">British</option>
+                <option value="mixed">British + one American</option>
               </select>
             </label>
           </div>
-          <div class="row gap wrap toggles">
-            <label><input type="checkbox" id="p-blind"> 🙈 Blind mode (hide transcript) <kbd>B</kbd></label>
-            <label><input type="checkbox" id="p-showq" checked> Show questions</label>
-            <span class="muted small">Click any line to jump there.</span>
-          </div>
-        </div>
-        <div class="grid-2 practice-body">
-          <div class="card"><h3>Transcript</h3><ol id="p-transcript" class="transcript"></ol></div>
-          <div class="card" id="p-questions-card"><h3>Questions</h3><div id="p-questions" class="questions"></div></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================ EXAM ============================ -->
-    <section id="tab-exam" class="view">
-      <div class="empty" data-empty>Generate a recording in <b>Studio</b> first, or pick one: <select class="test-picker"></select></div>
-      <div data-loaded hidden>
-        <div id="e-intro" class="card exam-intro">
-          <h2 class="test-title"></h2>
-          <p id="e-meta" class="muted"></p>
-          <ul class="rules">
-            <li>🔊 The recording plays <b>once</b>, just like the real test. No pausing, no rewinding.</li>
-            <li>✍️ Type your answers while you listen. Spelling counts, capitals don't.</li>
-            <li>⏱️ When the audio ends you get <b>2 minutes</b> to check, then it's marked.</li>
-          </ul>
+          <div id="t-plan" class="chips plan"></div>
           <div class="row gap wrap">
-            <button id="e-start" class="primary big">▶ Start exam</button>
-            <select class="test-picker" title="Switch recording"></select>
+            <button id="t-copy" class="primary">📋 Copy prompt</button>
+            <button id="t-new-prompt" class="ghost" title="New topic and question layout">🔄 New prompt</button>
+            <a class="button ghost" href="https://claude.ai/new" target="_blank" rel="noopener">Open Claude ↗</a>
+            <button id="t-show-prompt" class="ghost">👁 Show prompt</button>
           </div>
-          <p id="e-noanswers" class="banner warn" hidden>This script has no <code>=== ANSWERS ===</code> section, so you can listen under exam conditions but it can't be marked.</p>
+          <textarea id="t-prompt" class="prompt-box" readonly hidden></textarea>
         </div>
 
-        <div id="e-live" hidden>
-          <div class="card exam-bar">
-            <span id="e-state" class="live">● Playing</span>
-            <div class="track"><div id="e-track"></div></div>
-            <span id="e-time" class="time">0:00 / 0:00</span>
-            <label class="vol">🔈 <input id="e-volume" type="range" min="0" max="1" step="0.05" value="1"></label>
-            <button id="e-submit" class="primary" hidden>Submit answers</button>
+        <div class="grid-2">
+          <div class="card step">
+            <div class="step-head">
+              <span class="step-no" id="t-paste-no">2</span><h2>Paste Claude's script</h2>
+              <div class="row gap push">
+                <select id="library-select" title="Open a saved script"><option value="">📚 Library…</option></select>
+                <button id="btn-save" class="ghost" title="Save to the library folder">💾</button>
+                <button id="btn-clear" class="ghost" title="Clear">✨</button>
+              </div>
+            </div>
+            <textarea id="script" spellcheck="false" placeholder="Paste the whole code block Claude gave you here…"></textarea>
           </div>
-          <div class="card"><div id="e-questions" class="questions exam"></div></div>
-        </div>
 
-        <div id="e-results" hidden>
-          <div class="card score-card">
-            <div id="e-score" class="score"></div>
-            <div id="e-band" class="band"></div>
-            <p id="e-cheer"></p>
-            <div class="row gap wrap center">
-              <button class="primary" data-goto="practice">🎧 Review in Practice</button>
-              <button id="e-retry" class="ghost">↺ Retake</button>
+          <div class="card step">
+            <div class="step-head"><span class="step-no" id="t-gen-no">3</span><h2 id="parsed-title">Check &amp; generate</h2></div>
+            <div id="stats" class="chips"></div>
+            <div id="checklist" class="checklist"></div>
+            <div id="cast" class="cast"></div>
+            <button id="btn-generate" class="primary big" disabled>🎙️ Generate audio</button>
+            <div id="progress" class="progress" hidden><div class="bar"></div><span class="label"></span></div>
+            <div id="render-result" class="result" hidden>
+              <div class="result-title">✅ <span id="result-text"></span></div>
+              <div class="row gap wrap">
+                <button class="primary alt" data-goto="exam">📝 Take as exam</button>
+                <button class="primary" data-goto="practice">🎧 Practise</button>
+                <a id="dl-wav" class="button ghost" download>⬇ WAV</a>
+                <a id="dl-mp3" class="button ghost" hidden>⬇ MP3</a>
+              </div>
             </div>
           </div>
-          <div class="grid-2">
-            <div class="card"><h3>Your answers</h3><table id="e-table" class="answers"></table></div>
-            <div class="card"><h3>Transcript</h3><ol id="e-transcript" class="transcript static"></ol></div>
+        </div>
+
+        <div class="card">
+          <h3 id="t-recent-title">Your recordings</h3>
+          <ul id="recent" class="recent"></ul>
+        </div>
+      </section>
+
+      <!-- ============================ PRACTICE ============================ -->
+      <section id="view-practice" class="view">
+        <div class="empty" data-empty>Generate a recording on a task page first, or pick one: <select class="test-picker"></select></div>
+        <div data-loaded hidden>
+          <div class="card player">
+            <div class="row between wrap gap">
+              <h2 class="test-title"></h2>
+              <select class="test-picker" title="Switch recording"></select>
+            </div>
+            <div class="controls">
+              <button id="p-prev" class="icon" title="Previous line (←)">⏮</button>
+              <button id="p-play" class="icon play" title="Play / pause (Space)">▶</button>
+              <button id="p-next" class="icon" title="Next line (→)">⏭</button>
+              <button id="p-replay" class="icon" title="Replay current line (R)">↻</button>
+              <button id="p-loop" class="icon toggle" title="Loop current line (L)">⟲</button>
+              <span id="p-time" class="time">0:00 / 0:00</span>
+              <input id="p-seek" type="range" min="0" max="1000" value="0" aria-label="Seek">
+              <label class="speed">Speed
+                <select id="p-speed">
+                  <option value="0.75">0.75×</option><option value="0.9">0.9×</option>
+                  <option value="1" selected>1×</option><option value="1.1">1.1×</option><option value="1.25">1.25×</option>
+                </select>
+              </label>
+            </div>
+            <div class="row gap wrap toggles">
+              <div id="p-parts" class="part-tabs" hidden></div>
+              <label><input type="checkbox" id="p-blind"> 🙈 Blind mode <kbd>B</kbd></label>
+              <label><input type="checkbox" id="p-showq" checked> Show questions</label>
+              <span class="muted small">Click any line to jump there.</span>
+            </div>
+          </div>
+          <div class="grid-2 practice-body">
+            <div class="card"><h3>Transcript</h3><ol id="p-transcript" class="transcript"></ol></div>
+            <div class="card" id="p-questions-card"><h3 id="p-q-title">Questions</h3><div id="p-questions" class="questions"></div></div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- ============================ PROGRESS ============================ -->
-    <section id="tab-progress" class="view">
-      <div class="card">
-        <h2>Your progress</h2>
-        <p id="h-summary" class="muted"></p>
-        <div id="h-chart" class="chart"></div>
-        <table id="h-table" class="answers history"></table>
-      </div>
-    </section>
-  </main>
+      <!-- ============================ EXAM ============================ -->
+      <section id="view-exam" class="view">
+        <div class="empty" data-empty>Generate a recording on a task page first, or pick one: <select class="test-picker"></select></div>
+        <div data-loaded hidden>
+          <div id="e-intro" class="card exam-intro">
+            <h2 class="test-title"></h2>
+            <p id="e-meta" class="muted"></p>
+            <ul class="rules" id="e-rules"></ul>
+            <div class="row gap wrap">
+              <button id="e-start" class="primary big">▶ Start exam</button>
+              <select class="test-picker" title="Switch recording"></select>
+            </div>
+            <p id="e-noanswers" class="banner warn" hidden>This script has no <code>=== ANSWERS ===</code> section, so you can listen under exam conditions but it can't be marked.</p>
+          </div>
+
+          <div id="e-live" hidden>
+            <div class="card exam-bar">
+              <span id="e-state" class="live">● Playing</span>
+              <div class="track"><div id="e-track"></div></div>
+              <span id="e-time" class="time">0:00 / 0:00</span>
+              <label class="vol">🔈 <input id="e-volume" type="range" min="0" max="1" step="0.05" value="1"></label>
+              <button id="e-submit" class="primary" hidden>Submit answers</button>
+            </div>
+            <div id="e-parts" class="part-tabs exam-parts" hidden></div>
+            <div class="card"><div id="e-questions" class="questions exam"></div></div>
+          </div>
+
+          <div id="e-results" hidden>
+            <div class="card score-card">
+              <div id="e-score" class="score"></div>
+              <div id="e-band" class="band"></div>
+              <div id="e-parts-score" class="chips center"></div>
+              <p id="e-cheer"></p>
+              <div class="row gap wrap center">
+                <button class="primary" data-goto="practice">🎧 Review in Practice</button>
+                <button id="e-retry" class="ghost">↺ Retake</button>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="card"><h3>Your answers</h3><table id="e-table" class="answers"></table></div>
+              <div class="card"><h3>Transcript</h3><ol id="e-transcript" class="transcript static"></ol></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ PROGRESS ============================ -->
+      <section id="view-progress" class="view">
+        <header class="page-head">
+          <h1>Your progress</h1>
+          <p id="h-summary" class="muted"></p>
+        </header>
+        <div id="h-parts" class="stat-row"></div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>By question type</h3>
+            <p class="muted small">Your weakest types are at the top. Drill them until they aren't.</p>
+            <table id="h-types" class="answers types"></table>
+          </div>
+          <div class="card">
+            <h3>Score history</h3>
+            <div id="h-chart" class="chart"></div>
+            <table id="h-table" class="answers history"></table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <div id="toast" class="toast" hidden></div>
   <script src="/static/app.js"></script>

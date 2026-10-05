@@ -1,0 +1,89 @@
+### PART 3
+Title: Part 3 – The History of the Bicycle
+Voices: Narrator=bm_george, Hannah=bf_isabella, Owen=bm_lewis
+Narrator: Part 3. You will hear two history students, Hannah and Owen, discussing a seminar presentation they are preparing on the history of the bicycle.
+Narrator: First, you have some time to look at questions 21 to 24.
+[Pause 30]
+Narrator: Now listen carefully and answer questions 21 to 24.
+Owen: Hi, Hannah. Have you got a minute to go over the bicycle seminar? It's only a week until we present.
+Hannah: Sure. Actually, I've been meaning to talk to you about the research. How did you get on?
+Owen: Well, at first I was worried the library wouldn't have enough, but it turned out there were shelves of stuff. Far more than we could ever use.
+Hannah: Same here. No, the real headache for me was the chronology. One author says pedals were added in eighteen sixty-one, another says eighteen sixty-seven, and a third goes for somewhere in between. They can't all be right.
+Owen: I kept running into that too. And online it's even worse, um, half the websites seem to be recycling the same paragraph, mistakes and all. Nobody's bothered to go back and see where it originally came from.
+Hannah: Exactly. Whereas the archive material was surprisingly easy to use. The museum's scanned catalogues are really clear.
+Owen: They are. I'd expected faded handwriting, but no. And I thought we might struggle to find anything on the years before the eighteen-sixties, but there's plenty on Drais and his machine.
+Hannah: Right. So, the presentation itself. Dr Whitlow said we've got twenty minutes, including questions.
+Owen: OK. I had an idea, actually. My grandad's got an old roadster from the nineteen thirties. I could wheel it in and show everyone how the rod brakes worked.
+Hannah: It's a lovely thought, but the seminar room's on the fourth floor and the lift's been out of action for weeks. I can't see you carrying it up all those stairs.
+Owen: Fair enough. What about a film clip, then? There's some wonderful early footage of a road race outside Paris.
+Hannah: Dr Whitlow was quite firm about that, though. She said last year's groups wasted ages trying to get videos to play on that projector. I'd rather not risk it.
+Owen: Hmm, true. So what do we show instead?
+Hannah: Well, I came across a collection of posters from the eighteen nineties, the ones manufacturers put out to persuade people to buy their machines. They'd look brilliant on the slides, and they tell you exactly who the companies were targeting.
+Owen: Oh, I like that. Let's definitely use those. And I'd still like to give people something they can take away with them. Maybe a single sheet setting out the key dates in order?
+Hannah: Good idea. It means we won't have to rattle through every date out loud. I was also going to suggest a quiz at the end, to get people involved.
+Owen: Mm, I'm not so sure. With only twenty minutes, it might come across as a bit of a gimmick.
+Hannah: Yes, you're probably right. Let's leave it out.
+Narrator: Before you hear the rest of the discussion, you have some time to look at questions 25 to 30.
+[Pause 30]
+Narrator: Now listen and answer questions 25 to 30.
+Owen: Right, so shall we go through what we're saying about each stage? Starting with Drais's hobby horse, from eighteen seventeen.
+Hannah: OK. Quite a few books call it the true ancestor of the bicycle, and some people think that's going a bit far, since you just pushed it along with your feet.
+Owen: I don't think it's an exaggeration, though. The whole principle of balancing on two wheels starts there.
+Hannah: Fair point. What I'd rather focus on is how people reacted. The cartoonists of the day had a field day, drawing these vain young gentlemen scooting along the pavements. The public clearly thought the whole thing was absurd.
+Owen: Yes, let's put one of those caricatures up. Then there's the boneshaker, in the eighteen sixties. I'd assumed they'd be terribly pricey, but apparently local blacksmiths were knocking out cheap copies.
+Hannah: That's right. The really intriguing thing is that nobody can say for certain whose idea the pedals were. Was it Michaux in Paris, or a mechanic called Lallement who'd worked for him? Historians are still arguing about it.
+Owen: Which links back to that problem with the dates. OK, next, the penny-farthing.
+Hannah: I'd always imagined only wealthy people could afford them.
+Owen: So had I, but it seems cycling clubs hired them out for very little. What really comes across in the accounts is who rode them: athletic young men who liked a bit of danger and wanted to show off, frankly. You sat so high up that if you hit a stone, you went straight over the handlebars.
+Hannah: Taking a header, they called it. Right, the safety bicycle, from the eighteen eighties.
+Owen: One of the books I read argues it's been given far too much credit, that it was really just a gradual refinement of what came before.
+Hannah: I don't buy that at all. And anyway, for our purposes the main point is what it meant for women. Suddenly they could go off on their own, without a chaperone, and it even changed the clothes they wore.
+Owen: Agreed. That'll be a strong section. Then Dunlop and the air-filled tyre. Isn't that another case where the inventor's disputed?
+Hannah: Not really. A Scottish engineer called Thomson patented one in eighteen forty-five, and that's well documented. But he'd come up with it for horse-drawn carriages, not bikes. Dunlop simply hit on the same idea more than forty years later.
+Owen: Oh, I didn't know that. And finally, racing. Honestly, at first I saw it as a bit of a side issue.
+Hannah: And now?
+Owen: Well, half the people in our seminar group are in the university cycling club. I reckon that's the part they'll really get excited about.
+Hannah: You're probably right. Let's give it a proper slot at the end, then.
+Narrator: That is the end of Part 3.
+=== QUESTIONS ===
+@SET 21-22 | mcq-multi | Choose TWO letters, A–E.
+Questions 21 and 22
+Which TWO problems did the students have with their research sources?
+A  Some sources gave conflicting dates.
+B  Several useful books were unavailable.
+C  Online information had often been copied without being checked.
+D  Archive documents were difficult to read.
+E  There was little material on the earliest machines.
+@SET 23-24 | mcq-multi | Choose TWO letters, A–E.
+Questions 23 and 24
+Which TWO things do the students decide to include in their presentation?
+A  a demonstration using an old bicycle
+B  a film of an early race
+C  some historical advertisements
+D  a quiz for the audience
+E  a handout showing a timeline
+@SET 25-30 | matching | Choose SIX answers from the box and write the correct letter, A–H, next to Questions 25–30.
+What comment do the students make about each of the following stages in the history of the bicycle?
+A  Its significance has been overstated.
+B  It was beyond the means of most people.
+C  Who invented it is still uncertain.
+D  It mainly attracted daring young men.
+E  It gave women greater independence.
+F  It was ridiculed when it first appeared.
+G  It was originally intended for a different vehicle.
+H  It will probably interest their classmates most.
+25. the hobby horse ________
+26. the boneshaker ________
+27. the penny-farthing ________
+28. the safety bicycle ________
+29. the pneumatic tyre ________
+30. cycle racing ________
+=== ANSWERS ===
+21-22. A, C
+23-24. C, E
+25. F
+26. C
+27. D
+28. E
+29. G
+30. H
