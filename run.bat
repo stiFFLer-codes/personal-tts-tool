@@ -1,6 +1,6 @@
 @echo off
 cd /d "%~dp0"
-title IELTS Listening Studio
+title Listening Studio
 if not exist ".venv\Scripts\python.exe" (
   echo   Please run setup.bat first.
   pause

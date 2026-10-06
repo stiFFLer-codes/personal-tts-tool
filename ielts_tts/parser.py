@@ -285,6 +285,27 @@ def _end_of_part(part: int, line: int) -> list:
                     line=line, part=part, auto=True)]
 
 
+def _ensure_check_time(segments: list, part: int, offset: int) -> list:
+    """Between Parts of a full test: 'That is the end of Part N…' followed by 30 s to check.
+
+    Adds whatever the script left out, right after the announcement (scripts may put
+    "Now turn to Part N+1" after the pause, which must not get a second pause)."""
+    ends = [i for i, s in enumerate(segments) if s.kind == "speech" and re.search(r"end of part", s.text, re.I)]
+    if not ends:
+        return segments + _end_of_part(part, segments[-1].line if segments else offset)
+    i = ends[-1]
+    if any(s.kind == "pause" for s in segments[i + 1:]):
+        return segments
+    return segments[:i + 1] + _end_of_part(part, segments[i].line)[1:] + segments[i + 1:]
+
+
+def _drop_final_check(segments: list):
+    """The exam gives 2 minutes to check after the recording, so silence after the last
+    spoken words of the test is dropped (narrator lines around it stay)."""
+    last_talk = max((i for i, s in enumerate(segments) if s.kind == "speech" and s.speaker != NARRATOR), default=-1)
+    segments[:] = [s for i, s in enumerate(segments) if not (i > last_talk and s.kind == "pause")]
+
+
 def unwrap(script: str) -> str:
     """Drop an outer ```text ... ``` fence copied along with Claude's answer."""
     lines = script.strip("\n").splitlines()
@@ -304,6 +325,7 @@ def parse_test(script: str, kind: str = "custom") -> Test:
     markers = list(_PART.finditer(script))
     if not markers:
         test = parse(script)
+        _drop_final_check(test.segments)
         test.kind = kind
         part = int(kind[4:]) if kind.startswith("part") else _guess_part(test)
         for seg in test.segments:
@@ -330,13 +352,7 @@ def parse_test(script: str, kind: str = "custom") -> Test:
         segments = block.segments
         is_last = i == len(markers) - 1
         if combined.kind == "full" and not is_last:
-            said_end = any(s.kind == "speech" and re.search(r"end of part", s.text, re.I)
-                           for s in segments[-3:])
-            ends_with_pause = bool(segments) and segments[-1].kind == "pause"
-            if not said_end:
-                segments = segments + _end_of_part(part, segments[-1].line if segments else offset)
-            elif not ends_with_pause:
-                segments = segments + _end_of_part(part, segments[-1].line)[1:]
+            segments = _ensure_check_time(segments, part, offset)
         combined.segments.extend(segments)
         for who in block.speakers:
             if who not in combined.speakers:
@@ -350,6 +366,7 @@ def parse_test(script: str, kind: str = "custom") -> Test:
                                "numbers": block.question_numbers, "sets": block.sets})
         titles.append(block.title)
 
+    _drop_final_check(combined.segments)
     combined.questions = "\n\n".join(p["questions"] for p in combined.parts if p["questions"])
     if has_title:
         combined.title = preamble.title

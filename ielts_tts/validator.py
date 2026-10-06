@@ -1,19 +1,18 @@
-"""Check a parsed script against the real IELTS Listening format before rendering.
+"""Check that a pasted script is in the format the app needs before rendering.
 
-Returns a checklist the Studio shows as ✅ / ⚠️ / ❌. Errors block "Generate" on the
-task pages (the script would make a broken test); warnings are things a real
-paper would do differently but that still produce a usable practice test.
+Only format is checked (numbering, answer key, question sets, word limits, option
+letters); the content and pattern of the test are Claude's call. Returns a
+checklist shown as ✅ / ⚠️ / ❌. Errors block "Generate" on the task pages because
+the test couldn't be shown or marked; warnings still give a usable test.
 """
 
 import re
 
 from . import grader
-from .normalize import has_spelling
-from .parser import NARRATOR, PART_RANGES, SET_TYPES, Test
+from .parser import PART_RANGES, SET_TYPES, Test
 
-# Speech words per Part (narration excluded). Real recordings run ~4-7 minutes.
-WORDS = {1: (450, 1100), 2: (450, 1100), 3: (450, 1150), 4: (500, 1200)}
-SPEAKERS = {1: (2, 2), 2: (1, 2), 3: (2, 4), 4: (1, 1)}
+# The exam's name must not show up in the app (titles, transcript, question paper).
+EXAM_NAME = re.compile(r"\bi\.?\s?e\.?\s?l\.?\s?t\.?\s?s\b", re.I)
 TASK_PARTS = {"part1": [1], "part2": [2], "part3": [3], "part4": [4], "full": [1, 2, 3, 4]}
 
 
@@ -115,47 +114,10 @@ def _check_part(c: Checklist, test: Test, part: int, info: dict, strict: bool):
 
 
 def _check_audio(c: Checklist, test: Test, part: int):
+    """Only what the app needs to voice the Part: something to say and a voice per speaker."""
     label = f"Part {part}"
-    segs = [s for s in test.segments if s.part == part and not s.auto]
-    speech = [s for s in segs if s.kind == "speech"]
-    voices = []
-    for s in speech:
-        if s.speaker != NARRATOR and s.speaker not in voices:
-            voices.append(s.speaker)
-    lo, hi = SPEAKERS[part]
-    kinds = {1: "two speakers", 2: "one main speaker", 3: "2–4 speakers", 4: "one lecturer"}
-    c.check(lo <= len(voices) <= hi, f"{label}: {len(voices)} speaker(s), as in the real test ({kinds[part]})",
-            f"{label}: has {len(voices)} speaker(s) ({', '.join(voices) or 'none'}); real Part {part} has {kinds[part]}",
-            "warn")
-
-    words = sum(len(s.text.split()) for s in speech if s.speaker != NARRATOR)
-    wlo, whi = WORDS[part]
-    c.check(wlo <= words <= whi, f"{label}: {words} words of speech (real: ~{wlo}–{whi})",
-            f"{label}: {words} words of speech; real Part {part} recordings have ~{wlo}–{whi}", "warn")
-
-    intro = next((s for s in speech), None)
-    c.check(bool(intro and intro.speaker == NARRATOR), f"{label}: opens with the narrator's introduction",
-            f"{label}: should open with a narrator line ('You will hear...')", "warn")
-
-    pauses = [i for i, s in enumerate(segs) if s.kind == "pause"]
-    first_talk = next((i for i, s in enumerate(segs) if s.kind == "speech" and s.speaker != NARRATOR), len(segs))
-    reading_time = [i for i in pauses if i < first_talk]
-    c.check(bool(reading_time), f"{label}: reading time before the first questions",
-            f"{label}: no [Pause: ...] before the recording starts (time to look at the questions)", "warn")
-    last_talk = max((i for i, s in enumerate(segs) if s.kind == "speech" and s.speaker != NARRATOR), default=0)
-    mid = [i for i in pauses if first_talk < i < last_talk]
-    if part == 4:
-        c.check(not mid, f"{label}: no break in the middle of the lecture (as in the real test)",
-                f"{label}: the real Part 4 has no break in the middle of the lecture; remove the mid-lecture [Pause]",
-                "warn")
-    else:
-        c.check(bool(mid), f"{label}: break before the second block of questions",
-                f"{label}: real Parts 1–3 pause halfway ('Before you hear the rest...') for the next questions",
-                "warn")
-
-    if part == 1:
-        c.check(any(has_spelling(s.text) for s in speech), f"{label}: includes a spelled-out name or word",
-                f"{label}: real Part 1 usually spells a name letter by letter (W-H-I-T-F-I-E-L-D)", "warn")
+    speech = [s for s in test.segments if s.part == part and s.kind == "speech" and not s.auto]
+    c.check(bool(speech), f"{label}: {len(speech)} spoken lines", f"{label}: no spoken lines (script lines need 'Name: text')")
 
 
 def _limit_text(limit):
@@ -221,6 +183,10 @@ def validate(test: Test, kind: str = None) -> dict:
             if not qset["known"]:
                 c.warn(f"Unknown question type '{qset['type']}'")
 
+    shown = " ".join([test.title, test.questions] + [s.text for s in test.segments] +
+                     [p.get("title", "") for p in test.parts])
+    c.check(not EXAM_NAME.search(shown), "No exam name in titles, script or questions",
+            "The script mentions the exam's name; please remove it from titles, script and questions", "warn")
     for w in test.warnings:
         c.warn(w)
     return {"items": c.items, "errors": len(c.errors), "ok": not c.errors}

@@ -48,7 +48,7 @@ def main():
     print("Downloading the Kokoro voice model into", MODELS_DIR)
     download(MODEL_FILES["small" if args.small else "full"])
     download(VOICES_FILE)
-    print("Done. Start the app with run.bat (or: python -m ielts_tts)")
+    print("Done. Start the app with run.bat")
 
 
 if __name__ == "__main__":

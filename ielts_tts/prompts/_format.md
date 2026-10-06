@@ -1,70 +1,81 @@
 ═══════════════════════════════════════════════
-QUALITY RULES (these make it feel like the real exam)
+WHAT IS UP TO YOU
 ═══════════════════════════════════════════════
-1. ORIGINAL material. Do not copy or closely imitate any published Cambridge/IELTS test. Invent names,
-   places, organisations and numbers.
-2. ORDER: answers occur in the recording in the same order as the questions. Spread them evenly
-   (roughly one answer every 50–90 spoken words). Never put two answers in the same sentence.
-3. COMPLETION answers (form/note/table/flow-chart/summary/sentence/short-answer) must be words the
-   speaker actually SAYS, spelled exactly as in the answer key. The question wording around the gap must
-   PARAPHRASE the speech (synonyms, different grammar). It must not copy the sentence word for word.
-4. LETTER answers (multiple choice, matching, map/plan): the correct option is expressed in different
-   words from the option text. The wrong options must be MENTIONED in the recording (considered,
-   rejected, true of something else, or true in the past) so that keyword-spotting fails.
-5. DISTRACTORS: at least {{DISTRACTORS}} genuine traps per Part, e.g. a speaker corrects themselves
-   ("the 16th… no, sorry, the 23rd"), a plan changes, a similar number is mentioned first, an option is
-   suggested and then rejected, "not X but Y", or a price that used to be one thing and is now another.
-6. ANSWER KEY: every answer obeys its set's word limit (a number written in digits counts as a number;
-   a hyphenated word counts as one word). List every acceptable variant separated by " | " and put
-   optional words in round brackets, e.g. `(a) waterproof jacket(s) | raincoat`.
-7. NATURAL SPOKEN ENGLISH: contractions, short turns, the occasional "um", "right", "let me see" or
-   "actually". Speakers interrupt politely and react to each other. No stage directions, sound effects,
-   emojis or markdown inside the script. Use British spelling and a British setting{{ACCENT_SETTING}}.
-8. NUMBERS for the voice engine: write dates, prices, times, years and quantities IN WORDS exactly as a
-   speaker would say them ("the twenty-third of March", "forty-two pounds fifty", "half past nine",
-   "nineteen eighty-six"). Write phone numbers, postcodes, reference codes and room numbers as
-   digits/capitals with spaces (`0412 556 789`, `CB2 4RT`) so they're read character by character.
-   Spell a word aloud with hyphens between capital letters (`W-H-I-T-F-I-E-L-D`).
-9. SPEAKER LABELS: every spoken line starts with a label and a colon. The narrator is always `Narrator:`.
-   Other speakers use one simple first name or a role (`Tutor:`, `Guide:`, `Dr Patel:`), and the same
-   label every time.
-10. DIFFICULTY ({{DIFFICULTY}}): {{DIFFICULTY_RULES}}
+Everything about the content: the topic and setting, the speakers and how many, the question types and how
+they are mixed, the rubric wording, where the narrator speaks and pauses, the distractors, the vocabulary and
+the difficulty. Base these choices on real past papers and recent live tests, and vary them from one request to
+the next: do not fall back on one fixed template. The only requirement is that a candidate could not tell
+your test apart from a real one.
+
+The rest of this message is the FORMAT the practice app needs to voice your script with text-to-speech, show
+the question paper on screen and mark the answers automatically. Follow it exactly.
 
 ═══════════════════════════════════════════════
-STRICT OUTPUT FORMAT (the practice tool parses this, so follow it exactly)
+STRICT OUTPUT FORMAT
 ═══════════════════════════════════════════════
-• Output the whole test inside ONE code block that starts with ```text and ends with ```. Write
-  NOTHING before or after the code block: no greeting, no explanation, no notes.
-• Inside the script, `[Pause N]` = N seconds of silence (e.g. `[Pause 30]`). Put it on its own line.
-• Question sets are introduced by a header line:
-      @SET <first>-<last> | <type> | <exact rubric>
-  where <type> is one of: form, note, table, flowchart, summary, sentence, short, mcq, mcq-multi,
-  matching, map. The rubric is the official instruction including the word limit, e.g.
-  `Write ONE WORD AND/OR A NUMBER for each answer.`
-• Every question is numbered. Gaps are written as the question number followed by eight underscores
-  (`Name: Clara 1 ________`). Multiple-choice stems start with `<number>. ` and each option goes on its
-  own line as `A  text` (capital letter, two spaces).
-• Maps and plans are drawn as plain text between two lines containing only `~~~` (tildes, NOT
-  backticks), under 70 characters wide, with NO gaps inside. The numbered items to label go below the map.
-• Tables are written as pipe-separated rows OUTSIDE any ~~~ block, one row per line, with gaps in the
-  cells: `Saturday | Castle walk | 3 ________`. Flow-charts are one step per line with a line containing
-  only `↓` between steps.
-• The answer key has one line per question: `<number>. <answer>`. For "choose TWO" questions write one
-  line for the pair: `21-22. B, D` (they're marked in either order).
+1. Output the whole test inside ONE code block that starts with ```text and ends with ```. Write nothing
+   before or after it: no greeting, no explanation, no notes.
 
-Layout of the code block:
-{{LAYOUT}}
+2. Never write the name of the exam anywhere in your output (titles, narration, script or questions). Say
+   "Part 1", "Listening Test", etc. instead.
+
+3. Each Part starts with a line `### PART <n>`, then `Title: <short title>`, then the script, then its
+   question paper and answer key:
+       ### PART <n>
+       Title: <short title>
+       Voices: Narrator=bm_george, <Label>=<voice id>, ...
+       <script lines>
+       === QUESTIONS ===
+       <question paper>
+       === ANSWERS ===
+       <answer key>
+
+4. SCRIPT LINES
+   • Every spoken line starts with a speaker label and a colon. The narrator/announcer is always
+     `Narrator:`. Other speakers use one simple first name or role (`Tom:`, `Tutor:`, `Dr Patel:`), the same
+     label every time.
+   • Every silence (time to look at questions, time to check answers) is its own line: `[Pause <seconds>]`,
+     e.g. `[Pause 30]`. Put the pauses wherever the real recording would have them, except at the very end:
+     the app itself gives the learner 2 minutes to check after the recording stops, so end the last Part
+     without a final checking pause.
+   • No stage directions, sound effects, markdown or emojis in the script.
+   • For the voice engine: write dates, prices, times, years and quantities in words exactly as a speaker
+     says them ("the twenty-third of March", "forty-two pounds fifty", "half past nine"). Write phone
+     numbers, postcodes and reference codes as spaced digits/capitals (`0412 556 789`, `CB2 4RT`). Write a
+     word that is spelled aloud with hyphens between capital letters (`W-H-I-T-F-I-E-L-D`).
+
+5. VOICES: the `Voices:` line gives every speaker a voice of the right gender. Available voices:
+   female British bf_emma, bf_isabella, bf_alice, bf_lily; male British bm_fable, bm_lewis, bm_daniel
+   (bm_george is the Narrator); female American af_heart, af_bella, af_nicole; male American am_michael,
+   am_adam, am_fenrir. Within a Part, no two speakers share a voice.
+
+6. QUESTION PAPER
+   • Number the questions {{NUMBERS}}.
+   • Start every group of questions with a header line:
+         @SET <first>-<last> | <type> | <the exact instructions, including any word limit>
+     where <type> is the closest of: form, note, table, flowchart, summary, sentence, short, mcq,
+     mcq-multi (choose TWO/THREE letters), matching, map (plan / map / diagram labelling).
+     Example: `@SET 1-6 | form | Complete the form below. Write ONE WORD AND/OR A NUMBER for each answer.`
+   • A gap is the question number followed by eight underscores: `Name: Clara 1 ________`.
+   • A multiple-choice question is `<number>. <question>` followed by its options, one per line, written
+     as a capital letter, two spaces, then the text: `A  It is closed on Mondays.`
+   • A matching box lists its options the same way (`A  text`), then the numbered items `15. <item> ________`.
+   • A map, plan or diagram is drawn in plain text between two lines that contain only `~~~` (tildes, not
+     backticks), under 70 characters wide, with no gaps inside it; the numbered items go below it.
+   • A table is written as pipe-separated rows (`Day | Activity | Cost`), one row per line, with gaps in
+     the cells. A flow-chart is one step per line with a line containing only `↓` between steps.
+
+7. ANSWER KEY: one line per question, `<number>. <answer>`. List every acceptable variant separated by
+   ` | ` and put optional words in round brackets: `2. 23(rd) March | March 23(rd)`. For "choose TWO"
+   questions write one line for the pair: `21-22. B, D`. Every answer must fit its set's word limit.
 
 ═══════════════════════════════════════════════
-SELF-CHECK before you answer (fix anything that fails, then output ONLY the code block)
+FORMAT CHECK before you answer
 ═══════════════════════════════════════════════
-□ {{QUESTION_COUNT}} questions, numbered exactly {{NUMBERS}}, each with one answer-key line
-□ Every @SET header uses an allowed type and the exact official rubric with its word limit
-□ Every completion answer is said word for word in the recording and obeys the word limit
-□ Answers appear in question order and are evenly spaced; no two in one sentence
-□ Every wrong MCQ/matching option is mentioned in the recording; the right one is paraphrased
-□ At least {{DISTRACTORS}} distractors per Part
-□ Narrator lines, pauses and part structure exactly as specified above
-□ Speech length per Part as specified (count the words); every line written in full, nothing summarised
-□ Numbers written in words; codes/phone numbers as spaced digits; spelled words with hyphens
+□ Questions numbered exactly {{NUMBERS}}, each with one answer-key line
+□ Every question group has an `@SET` header with an allowed type and its exact instructions
+□ Every answer fits the word limit in its instructions; letter answers use letters that are offered
+□ Every spoken line has a label; every silence is a `[Pause N]` line; there's a `Voices:` line for each Part
+□ Numbers written as spoken; codes as spaced characters; spelled words with hyphens
+□ The exam's name appears nowhere in the output
 □ Only the ```text code block is output

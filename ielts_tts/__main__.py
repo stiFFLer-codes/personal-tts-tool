@@ -8,7 +8,7 @@ from .server import serve
 
 
 def main():
-    ap = argparse.ArgumentParser(prog="ielts_tts", description="IELTS Listening Studio")
+    ap = argparse.ArgumentParser(prog="run.bat", description="Listening Studio")
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--no-browser", action="store_true", help="don't open the browser automatically")
     args = ap.parse_args()
@@ -22,9 +22,9 @@ def main():
         if not args.no_browser:
             webbrowser.open(url)
         return
-    print(f"\n  IELTS Listening Studio is running at {url}")
+    print(f"\n  Listening Studio is running at {url}")
     if not app.engine.ready:
-        print("  ! Voice model missing. Run setup.bat or: python -m ielts_tts.download_models")
+        print("  ! Voice model missing. Run setup.bat once, then start again.")
     print("  Press Ctrl+C to stop.\n")
     if not args.no_browser:
         threading.Timer(0.8, webbrowser.open, [url]).start()
@@ -34,7 +34,7 @@ def main():
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\n  Bye! Keep listening. Band 8 is loading...")
+        print("\n  Studio closed. See you at the next session.")
     finally:
         server.server_close()
 

@@ -1,4 +1,4 @@
-/* IELTS Listening Studio: front end. Vanilla JS, no dependencies, works offline. */
+/* Listening Studio: front end. Vanilla JS, no dependencies, works offline. */
 "use strict";
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -10,7 +10,7 @@ const el = (tag, { dataset, ...props } = {}, ...kids) => {
   return node;
 };
 
-const SPEAKER_COLOURS = ["#2f5bea", "#d9480f", "#0f8a6c", "#9c36b5", "#c2255c", "#1971c2", "#5c940d", "#e67700"];
+const SPEAKER_COLOURS = ["#4fd1e8", "#ff8a65", "#b8e06b", "#b49cff", "#f7b538", "#7ee0c3", "#ff9ec7", "#9ec5ff"];
 const NARRATOR = "Narrator";
 const TASK_IDS = ["part1", "part2", "part3", "part4", "full"];
 
@@ -121,7 +121,7 @@ const pct = (a, b) => (b ? Math.round((100 * a) / b) : 0);
 const kindLabel = (k) => ({ part1: "Part 1", part2: "Part 2", part3: "Part 3", part4: "Part 4", full: "Full test" }[k] || "Custom");
 
 function speakerColour(name, test = state.test) {
-  if (name === NARRATOR) return "#6a7180";
+  if (name === NARRATOR) return "#9aa3b5";
   const order = test ? Object.keys(test.cast).filter((s) => s !== NARRATOR) : [];
   const i = order.indexOf(name);
   return SPEAKER_COLOURS[(i < 0 ? 0 : i) % SPEAKER_COLOURS.length];
@@ -146,6 +146,7 @@ function showRoute(route) {
   if (route === "home") renderHome();
   if (route === "progress") loadHistory();
   if (route === "exam" && !state.examRunning) showExamIntro();
+  if (route === "practice") requestAnimationFrame(drawWave);
   window.scrollTo({ top: 0 });
 }
 window.addEventListener("hashchange", () => showRoute(location.hash.slice(1)));
@@ -169,31 +170,48 @@ async function loadStatus() {
 }
 
 /* ================================ home ================================ */
+const CARD_NUM = { part1: "01", part2: "02", part3: "03", part4: "04", full: "40" };
+
 function renderHome() {
   const box = $("#task-cards");
   box.replaceChildren();
   const history = state.history || [];
-  for (const id of TASK_IDS) {
+  TASK_IDS.forEach((id, i) => {
     const info = TASKS[id];
     const done = history.filter((h) => h.kind === id);
-    let stat = "Not tried yet";
+    let stat = "Not tried yet", level = 0;
     if (id === "full") {
       const bands = done.filter((h) => h.band != null).map((h) => h.band);
-      if (done.length) stat = `${done.length} test${done.length === 1 ? "" : "s"} · best band ${bands.length ? Math.max(...bands).toFixed(1) : "—"}`;
+      if (done.length) {
+        const best = bands.length ? Math.max(...bands) : null;
+        stat = `${done.length} test${done.length === 1 ? "" : "s"} · best band ${best != null ? best.toFixed(1) : "—"}`;
+        level = best != null ? (best / 9) * 100 : 0;
+      }
     } else {
       // Parts are practised on their own and inside full tests.
       const n = id.slice(-1);
       let right = 0, total = 0;
       for (const h of history) if (h.by_part?.[n]) { right += h.by_part[n][0]; total += h.by_part[n][1]; }
-      if (total) stat = `${pct(right, total)}% correct over ${total} questions`;
+      if (total) { stat = `${pct(right, total)}% correct · ${total} questions`; level = pct(right, total); }
     }
-    const card = el("a", { className: `task-card ${id}`, href: `#${id}` },
+    box.append(el("a", { className: `task-card ${id}`, href: `#${id}`, style: `--i:${i}` },
+      el("div", { className: "tc-num", textContent: CARD_NUM[id] }),
       el("div", { className: "tc-eyebrow", textContent: info.eyebrow.split(" · ").slice(0, 2).join(" · ") }),
-      el("div", { className: "tc-title", textContent: id === "full" ? "🏁 Full Test" : `${kindLabel(id)} · ${info.title}` }),
+      el("div", { className: "tc-title", textContent: id === "full" ? "Full Test" : info.title }),
       el("p", { className: "tc-lede", textContent: info.lede }),
       el("div", { className: "tc-types", textContent: info.types.slice(0, 3).join(" · ") }),
-      el("div", { className: "tc-stat", textContent: stat }));
-    box.append(card);
+      el("div", { className: "fader", title: "Your level" }, el("i", { style: `--v:${level}%` })),
+      el("div", { className: "tc-stat", textContent: stat })));
+  });
+}
+
+function renderSpectrum() {
+  const box = $(".spectrum");
+  if (!box || box.childElementCount) return;
+  for (let i = 0; i < 56; i++) {
+    const wave = Math.sin(i / 5) * 0.25 + Math.sin(i / 2.3) * 0.15 + 0.5;
+    const lo = Math.max(0.06, wave * 0.35 + Math.random() * 0.1), hi = Math.min(1, wave + Math.random() * 0.35);
+    box.append(el("i", { style: `--lo:${lo.toFixed(2)};--hi:${hi.toFixed(2)};animation-delay:${(-Math.random() * 1.8).toFixed(2)}s;animation-duration:${(1.2 + Math.random() * 1.4).toFixed(2)}s` }));
   }
 }
 
@@ -208,14 +226,17 @@ function openTask(task) {
   state.task = task;
   const info = TASKS[task];
   $("#t-eyebrow").textContent = info.eyebrow;
-  $("#t-title").textContent = task === "custom" ? info.title : `${kindLabel(task)} · ${info.title}`;
+  const pc = { part1: "var(--p1)", part2: "var(--p2)", part3: "var(--p3)", part4: "var(--p4)", full: "var(--pf)" }[task] || "var(--accent)";
+  $("#view-task").style.setProperty("--pc", pc);
+  $("#t-num").textContent = CARD_NUM[task] || "··";
+  $("#t-title").textContent = task === "custom" || task === "full" ? info.title : `${kindLabel(task)} · ${info.title}`;
   $("#t-lede").textContent = info.lede;
   const isTask = task !== "custom";
   $("#t-guide").hidden = !isTask;
   $("#t-step-prompt").hidden = !isTask;
   $("#t-paste-no").textContent = isTask ? "2" : "1";
   $("#t-gen-no").textContent = isTask ? "3" : "2";
-  if (isTask) { renderGuide(info); setupPromptControls(task); }
+  if (isTask) { renderGuide(info); setupPrompt(task); }
   $("#t-recent-title").textContent = isTask ? `Your ${kindLabel(task)} recordings` : "All recordings";
   if (switched) {
     scriptBox.value = state.drafts[task] ?? store.get(`draft:${task}`, "");
@@ -238,19 +259,9 @@ function renderGuide(info) {
       el("div", {}, el("h3", { textContent: "Strategy" }), el("ol", {}, ...info.tips.map((t) => el("li", { textContent: t }))))));
 }
 
-function setupPromptControls(task) {
-  const focus = $("#t-focus");
-  const options = state.tasks?.tasks[task]?.focus || [{ id: "mix", label: "Real exam mix" }];
-  focus.replaceChildren(...options.map((o) => el("option", { value: o.id, textContent: o.label })));
-  const saved = store.get(`prompt:${task}`, {});
-  focus.value = options.some((o) => o.id === saved.focus) ? saved.focus : "mix";
-  $("#t-focus-field").hidden = task === "full";
-  $("#t-topic-field").querySelector("input").placeholder = task === "full"
-    ? "Optional topic for Part 1 (the other Parts get random topics)" : "Leave empty for a random exam topic";
-  $("#t-topic").value = saved.topic || "";
-  $("#t-difficulty").value = saved.difficulty || "7-8";
-  $("#t-accent").value = saved.accent || "british";
-  if (state.prompts[task]) showPrompt(state.prompts[task]);
+function setupPrompt(task) {
+  $("#t-note").value = store.get(`note:${task}`, "");
+  if (state.prompts[task]) $("#t-prompt").value = state.prompts[task].prompt;
   else buildPrompt();
 }
 
@@ -258,40 +269,21 @@ let promptTimer;
 async function buildPrompt() {
   const task = state.task;
   if (!TASK_IDS.includes(task)) return;
-  const params = { task, topic: $("#t-topic").value.trim(), focus: $("#t-focus").value || "mix",
-    difficulty: $("#t-difficulty").value, accent: $("#t-accent").value };
-  store.set(`prompt:${task}`, params);
+  const note = $("#t-note").value.trim();
+  store.set(`note:${task}`, note);
   try {
-    const result = await api(`/api/prompt?${new URLSearchParams(params)}`);
+    const result = await api(`/api/prompt?${new URLSearchParams({ task, note })}`);
     if (state.task !== task) return;
     state.prompts[task] = result;
-    showPrompt(result);
+    $("#t-prompt").value = result.prompt;
   } catch (err) { toast(err.message); }
 }
 
-function showPrompt(result) {
-  $("#t-prompt").value = result.prompt;
-  const plan = $("#t-plan");
-  plan.replaceChildren();
-  for (const [part, info] of Object.entries(result.plan)) {
-    plan.append(el("span", { className: "chip" }, el("b", { textContent: `${kindLabel(part)}: ` }),
-      `${info.topic} — ${info.summary}`));
-  }
-}
-
-for (const id of ["#t-focus", "#t-difficulty", "#t-accent"]) $(id).addEventListener("change", buildPrompt);
-$("#t-topic").addEventListener("input", () => { clearTimeout(promptTimer); promptTimer = setTimeout(buildPrompt, 500); });
-$("#t-dice").addEventListener("click", async () => {
-  if (state.task === "full") { $("#t-topic").value = ""; return buildPrompt(); }
-  const { topic } = await api(`/api/topic?task=${state.task}`);
-  $("#t-topic").value = topic;
-  buildPrompt();
-});
-$("#t-new-prompt").addEventListener("click", () => { $("#t-topic").value = ""; buildPrompt(); });
+$("#t-note").addEventListener("input", () => { clearTimeout(promptTimer); promptTimer = setTimeout(buildPrompt, 350); });
 $("#t-show-prompt").addEventListener("click", () => {
   const box = $("#t-prompt");
   box.hidden = !box.hidden;
-  $("#t-show-prompt").textContent = box.hidden ? "👁 Show prompt" : "🙈 Hide prompt";
+  $("#t-show-prompt").textContent = box.hidden ? "Show prompt" : "Hide prompt";
 });
 async function copyText(text, message) {
   try {
@@ -305,7 +297,9 @@ async function copyText(text, message) {
   }
   toast(message, 3500);
 }
-$("#t-copy").addEventListener("click", () => {
+$("#t-copy").addEventListener("click", async () => {
+  clearTimeout(promptTimer);
+  await buildPrompt();                       // make sure the latest note is in
   const text = $("#t-prompt").value;
   if (text) copyText(text, "Prompt copied! Paste it into Claude, then paste Claude's reply below. 🚀");
 });
@@ -355,7 +349,7 @@ function renderCheck() {
   cast.replaceChildren(); stats.replaceChildren(); list.replaceChildren();
   const blocked = p && state.task !== "custom" && !p.checks.ok;
   $("#btn-generate").disabled = !p || !p.test.segments.some((s) => s.kind === "speech") || blocked;
-  $("#btn-generate").textContent = blocked ? "Fix the ❌ items to generate" : "🎙️ Generate audio";
+  $("#btn-generate").textContent = blocked ? "Fix the ❌ items to generate" : "Generate audio";
   if (!p) {
     $("#parsed-title").textContent = "Check & generate";
     list.append(el("p", { className: "muted small", textContent: "Paste Claude's reply on the left. The checks appear here." }));
@@ -385,7 +379,7 @@ function renderCheck() {
   for (const i of problems) list.append(el("div", { className: `check lvl-${i.level}`, textContent: `${icon[i.level]} ${i.text}` }));
   const errors = problems.filter((i) => i.level === "error");
   if (errors.length && state.task !== "custom") {
-    const ask = "Your IELTS script fails these format checks:\n" + errors.map((i) => `- ${i.text}`).join("\n") +
+    const ask = "Your script fails these format checks:\n" + errors.map((i) => `- ${i.text}`).join("\n") +
       "\nFix them, keep everything else the same, and send the whole corrected script again as one ```text code block.";
     list.append(el("button", { className: "ghost small-btn fix-btn", textContent: "📋 Copy fix request for Claude",
       onclick: () => copyText(ask, "Fix request copied. Paste it into the same Claude chat.") }));
@@ -489,7 +483,7 @@ async function loadLibrary() {
 function renderLibrary(selected = "") {
   const items = state.task === "custom" ? state.library : state.library.filter((i) => i.kind === state.task);
   const select = $("#library-select");
-  select.replaceChildren(el("option", { value: "", textContent: `📚 Library (${items.length})…` }));
+  select.replaceChildren(el("option", { value: "", textContent: `Library (${items.length})…` }));
   for (const item of items) select.append(el("option", { value: item.file, textContent: item.title, selected: item.file === selected }));
 }
 $("#library-select").addEventListener("change", async (e) => {
@@ -523,8 +517,8 @@ function renderRecent() {
       el("span", { textContent: t.title }),
       el("span", { className: "meta", textContent: `${fmt(t.duration)} · ${t.questions} Q${best} · ${t.created}` }),
       el("span", { className: "row gap" },
-        el("button", { className: "ghost small-btn", textContent: "📝 Exam", onclick: () => openTest(t.id, "exam") }),
-        el("button", { className: "ghost small-btn", textContent: "🎧", title: "Practice", onclick: () => openTest(t.id, "practice") })));
+        el("button", { className: "ghost small-btn", textContent: "Exam", onclick: () => openTest(t.id, "exam") }),
+        el("button", { className: "ghost small-btn", textContent: "Practice", onclick: () => openTest(t.id, "practice") })));
     recent.append(li);
   }
 }
@@ -753,6 +747,7 @@ function loadPractice(test) {
   });
   setPracticePart(practicePart);
   updateClock();
+  requestAnimationFrame(drawWave);
 }
 
 function setPracticePart(n) {
@@ -777,8 +772,9 @@ function lineAt(t) {
 function updateClock() {
   const t = practiceAudio.currentTime, d = practiceAudio.duration || state.test?.duration || 0;
   $("#p-time").textContent = `${fmt(t)} / ${fmt(d)}`;
-  if (!seeking) $("#p-seek").value = d ? Math.round((t / d) * 1000) : 0;
   $("#p-play").textContent = practiceAudio.paused ? "▶" : "⏸";
+  $("#p-lamp").classList.toggle("on", !practiceAudio.paused);
+  drawWave();
 
   const idx = lineAt(t);
   if (loopLine && currentLine >= 0) {
@@ -795,7 +791,6 @@ function updateClock() {
   }
 }
 
-let seeking = false;
 let rafId = 0;
 const tick = () => { updateClock(); if (!practiceAudio.paused) rafId = requestAnimationFrame(tick); };
 practiceAudio.addEventListener("play", () => { cancelAnimationFrame(rafId); tick(); });
@@ -803,15 +798,138 @@ practiceAudio.addEventListener("pause", updateClock);
 practiceAudio.addEventListener("loadedmetadata", updateClock);
 practiceAudio.addEventListener("seeked", updateClock);
 
-$("#p-seek").addEventListener("input", (e) => {
-  seeking = true;
-  const d = practiceAudio.duration || 0;
-  $("#p-time").textContent = `${fmt((e.target.value / 1000) * d)} / ${fmt(d)}`;
+practiceAudio.addEventListener("play", () => connectMeter(practiceAudio, $("#p-vu")));
+
+/* ---------- waveform seek bar: the recording's loudness, silences and Part boundaries ---------- */
+const wave = $("#p-wave");
+let waveHover = null;
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+function drawWave() {
+  const test = state.test;
+  const w = wave.clientWidth, h = wave.clientHeight;
+  if (!test || !w) return;
+  const dpr = window.devicePixelRatio || 1;
+  if (wave.width !== Math.round(w * dpr) || wave.height !== Math.round(h * dpr)) {
+    wave.width = Math.round(w * dpr);
+    wave.height = Math.round(h * dpr);
+  }
+  const ctx = wave.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  const peaks = test.peaks || [];
+  const d = practiceAudio.duration || test.duration || 1;
+  const played = Math.min(1, practiceAudio.currentTime / d);
+  const accent = cssVar("--accent"), base = cssVar("--faint"), hover = cssVar("--muted");
+  const bars = Math.max(1, Math.min(peaks.length || 1, Math.floor(w / 3)));
+  const bw = w / bars;
+  for (let i = 0; i < bars; i++) {
+    const from = Math.floor((i * peaks.length) / bars), to = Math.max(from + 1, Math.floor(((i + 1) * peaks.length) / bars));
+    let v = 0;
+    for (let j = from; j < to; j++) v = Math.max(v, peaks[j] || 0);
+    const bh = Math.max(2, v * (h - 16));
+    const frac = (i + 0.5) / bars;
+    const isPlayed = frac <= played;
+    ctx.globalAlpha = isPlayed ? 1 : 0.6;
+    ctx.fillStyle = isPlayed ? accent : waveHover != null && frac <= waveHover ? hover : base;
+    ctx.fillRect(i * bw + 0.5, (h - bh) / 2, Math.max(1, bw - 1.2), bh);
+  }
+  ctx.globalAlpha = 1;
+  if (test.parts?.length > 1) {
+    ctx.font = `600 10px ${cssVar("--mono")}`;
+    for (const part of test.parts.slice(1)) {
+      const x = (part.start / d) * w;
+      ctx.fillStyle = cssVar("--line-2");
+      ctx.fillRect(x, 0, 1, h);
+      ctx.fillStyle = cssVar("--muted");
+      ctx.fillText(`P${part.n}`, x + 4, 11);
+    }
+  }
+  ctx.fillStyle = accent;
+  ctx.fillRect(played * w - 1, 0, 2, h);
+}
+
+function waveFrac(e) {
+  const r = wave.getBoundingClientRect();
+  return Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+}
+wave.addEventListener("click", (e) => seekTo(waveFrac(e) * (practiceAudio.duration || state.test?.duration || 0)));
+wave.addEventListener("mousemove", (e) => {
+  waveHover = waveFrac(e);
+  const d = practiceAudio.duration || state.test?.duration || 0;
+  const tip = $("#p-wave-tip");
+  const idx = lineAt(waveHover * d);
+  const item = state.test?.timeline[idx];
+  const who = item ? (item.kind === "pause" ? "pause" : item.speaker) : "";
+  tip.textContent = `${fmt(waveHover * d)}${who ? " · " + who : ""}`;
+  tip.style.left = `${waveHover * 100}%`;
+  tip.hidden = false;
+  drawWave();
 });
-$("#p-seek").addEventListener("change", (e) => {
-  seeking = false;
-  seekTo((e.target.value / 1000) * (practiceAudio.duration || 0));
-});
+wave.addEventListener("mouseleave", () => { waveHover = null; $("#p-wave-tip").hidden = true; drawWave(); });
+window.addEventListener("resize", () => requestAnimationFrame(drawWave));
+
+/* ---------- live VU meters (Web Audio analyser on the playing recording) ---------- */
+const VU_SEGMENTS = 14;
+let audioCtx = null;
+const meters = new Map();
+for (const box of $$(".vu")) box.replaceChildren(...Array.from({ length: VU_SEGMENTS }, () => el("i")));
+
+function connectMeter(audio, box) {
+  if (meters.has(audio)) return;
+  try {
+    audioCtx ??= new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx.resume().then(() => {
+      // Only route through Web Audio once it's running, otherwise the recording would go silent.
+      if (audioCtx.state !== "running" || meters.has(audio)) return;
+      const source = audioCtx.createMediaElementSource(audio);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 1024;
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      meters.set(audio, { analyser, data: new Float32Array(analyser.fftSize), box, level: 0 });
+    }).catch(() => {});
+  } catch { /* no Web Audio: meters just stay dark */ }
+}
+
+function vuLoop() {
+  for (const [audio, m] of meters) {
+    let level = 0;
+    if (!audio.paused) {
+      m.analyser.getFloatTimeDomainData(m.data);
+      let sum = 0;
+      for (const v of m.data) sum += v * v;
+      const db = 20 * Math.log10(Math.sqrt(sum / m.data.length) + 1e-6);
+      level = Math.min(1, Math.max(0, (db + 50) / 44));
+    }
+    m.level = Math.max(level, m.level * 0.86);
+    const lit = Math.round(m.level * VU_SEGMENTS);
+    [...m.box.children].forEach((seg, i) => {
+      seg.className = i < lit ? `lit${i >= VU_SEGMENTS - 2 ? " peak" : i >= VU_SEGMENTS - 5 ? " hot" : ""}` : "";
+    });
+  }
+  $("#brand-lamp").classList.toggle("on", !practiceAudio.paused || !examAudio.paused);
+  requestAnimationFrame(vuLoop);
+}
+
+/* ---------- theme: auto / light / dark ---------- */
+function applyTheme(choice) {
+  if (choice === "light" || choice === "dark") document.documentElement.dataset.theme = choice;
+  else delete document.documentElement.dataset.theme;
+  for (const b of $$("[data-theme-choice]")) {
+    b.classList.toggle("on", b.dataset.themeChoice === choice);
+    b.setAttribute("aria-checked", String(b.dataset.themeChoice === choice));
+  }
+  requestAnimationFrame(drawWave);
+}
+function setupTheme() {
+  applyTheme(store.get("theme", "auto"));
+  for (const b of $$("[data-theme-choice]")) b.addEventListener("click", () => {
+    applyTheme(b.dataset.themeChoice);
+    store.set("theme", b.dataset.themeChoice);
+  });
+  window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => requestAnimationFrame(drawWave));
+}
 
 function togglePlay() { practiceAudio.paused ? practiceAudio.play() : practiceAudio.pause(); }
 function stepLine(dir) {
@@ -877,11 +995,11 @@ function showExamIntro() {
   $("#e-meta").textContent = `${kindLabel(t.kind)} · ${fmt(t.duration)} of audio · ${n} question${n === 1 ? "" : "s"}`;
   $("#e-noanswers").hidden = n > 0;
   const rules = [
-    "🔊 The recording plays <b>once</b>, just like the real test. No pausing, no rewinding.",
-    "✍️ Type your answers while you listen. Spelling counts, capitals don't, and answers over the word limit are wrong.",
-    multi ? "⏸ The audio has the real 30-second checks after Parts 1–3. The question paper switches Part automatically; click a Part to look ahead or back."
-      : "📄 Reading time before the questions is built into the audio, like the real test.",
-    "⏱️ When the audio ends you get <b>2 minutes</b> to check (computer-delivered timing), then it's marked.",
+    "The recording plays <b>once</b>, like the real test: no pausing, no rewinding.",
+    "Type your answers while you listen. Spelling counts, capitals don't, and answers over the word limit are wrong.",
+    multi ? "Reading and checking pauses are built into the audio. The question paper turns to each Part as the audio reaches it; click a Part to look ahead or back."
+      : "Reading and checking pauses are built into the audio.",
+    "When the audio ends you get <b>2 minutes</b> to check, then it's marked.",
   ];
   $("#e-rules").innerHTML = rules.map((r) => `<li>${r}</li>`).join("");
 }
@@ -894,8 +1012,8 @@ $("#e-start").addEventListener("click", () => {
   $("#e-intro").hidden = true;
   $("#e-live").hidden = false;
   $("#e-submit").hidden = true;
-  $("#e-state").textContent = "● Playing";
-  $("#e-state").classList.remove("done");
+  $("#e-state").textContent = "On air";
+  $("#e-onair").classList.remove("done");
   examParts = renderPaper($("#e-questions"), t, { editable: true });
   partTabs($("#e-parts"), examParts, setExamPart);
   playingPart = examParts[0].n;
@@ -903,6 +1021,7 @@ $("#e-start").addEventListener("click", () => {
   examAudio.src = t.audio;
   examAudio.currentTime = 0;
   examAudio.volume = Number($("#e-volume").value);
+  connectMeter(examAudio, $("#e-vu"));
   examAudio.play().catch(() => toast("Click Start again: the browser blocked autoplay."));
   $("#e-questions input.ans")?.focus();
 });
@@ -935,10 +1054,10 @@ examAudio.addEventListener("ended", () => {
   if (!state.test.question_numbers.length) { stopExam(); showExamIntro(); toast("Recording finished."); return; }
   let left = CHECK_SECONDS;
   const label = $("#e-state");
-  label.classList.add("done");
+  $("#e-onair").classList.add("done");
   $("#e-submit").hidden = false;
   const tickDown = () => {
-    label.textContent = `✓ Audio finished. Check your answers: ${fmt(left)}`;
+    label.textContent = `Off air · check your answers ${fmt(left)}`;
     if (left-- <= 0) submitExam();
   };
   tickDown();
@@ -1067,26 +1186,23 @@ async function loadHistory() {
 }
 
 function drillType(task, type) {
-  const saved = store.get(`prompt:${task}`, {});
-  const focusIds = (state.tasks?.tasks[task]?.focus || []).map((f) => f.id);
-  store.set(`prompt:${task}`, { ...saved, focus: focusIds.includes(type) ? type : "mix", topic: "" });
+  store.set(`note:${task}`, `Include plenty of ${(TYPE_LABELS[type] || type).toLowerCase()} questions.`);
   delete state.prompts[task];
   go(task);
-  toast(`${kindLabel(task)} prompt set to drill: ${TYPE_LABELS[type] || type}`, 3000);
+  toast(`Note added to the ${kindLabel(task)} prompt: ${TYPE_LABELS[type] || type}`, 3000);
 }
 
 /* ================================ boot ================================ */
 (async function boot() {
   $("#p-speed").value = store.get("speed", "1");
   try { await loadStatus(); } catch { toast("Can't reach the local server. Is run.bat still open?", 6000); return; }
-  try {
-    state.tasks = await api("/api/tasks");
-    $("#t-difficulty").replaceChildren(...state.tasks.difficulty.map((d) => el("option", { value: d.id, textContent: d.label })));
-  } catch (err) { toast(err.message); }
+  setupTheme();
+  renderSpectrum();
   await Promise.all([loadLibrary(), loadTests(), api("/api/history").then((r) => (state.history = r.history))]);
   state.task = null;
   const last = store.get("test", null);
   if (last && state.tests.some((t) => t.id === last)) await openTest(last);
   else if (state.tests[0]) await openTest(state.tests[0].id);
   showRoute(location.hash.slice(1) || "home");
+  requestAnimationFrame(vuLoop);
 })();

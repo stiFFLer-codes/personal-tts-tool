@@ -68,11 +68,17 @@ class Errors(unittest.TestCase):
         errors, _ = problems(GOOD_PART4.replace("@SET 31-40 | note | ", ""), "part4")
         self.assertTrue(any("no @SET headers" in e for e in errors), errors)
 
-    def test_mid_lecture_break_warns(self):
+    def test_pattern_is_not_checked_any_more(self):
+        # A mid-lecture break is Claude's call now: no warning, no error.
         script = GOOD_PART4.replace("Narrator: That is the end of Part 4.",
                                     "[Pause 30]\nLecturer: Moving on.\nNarrator: That is the end of Part 4.")
         _, result = problems(script, "part4")
-        self.assertTrue(any("no break in the middle" in i["text"] for i in result["items"] if i["level"] == "warn"))
+        self.assertEqual([i for i in result["items"] if i["level"] != "ok"], [])
+
+    def test_exam_name_is_flagged(self):
+        script = GOOD_PART4.replace("Title: Part 4 – Bees", "Title: IELTS Part 4 – Bees")
+        _, result = problems(script, "part4")
+        self.assertTrue(any("exam's name" in i["text"] for i in result["items"] if i["level"] == "warn"))
 
     def test_mcq_answer_outside_options(self):
         script = """### PART 3
