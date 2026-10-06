@@ -119,3 +119,27 @@ class MultiPart(unittest.TestCase):
         from ielts_tts.parser import parse_test
         t = parse_test("Guide: Hi\n=== QUESTIONS ===\n@SET 15-16 | map | Label the map below. Write the correct letter, A–E, next to Questions 15–16.\n~~~\n 12. not a question ________\n~~~\n15. Cafe ________\n16. Shop ________\n=== ANSWERS ===\n15. A\n16. B", "part2")
         self.assertEqual(t.question_numbers, [15, 16])
+
+
+class CheckingTime(unittest.TestCase):
+    def test_turn_to_next_part_after_pause_gets_no_second_pause(self):
+        from ielts_tts.parser import parse_test
+        part = lambda n: (f"### PART {n}\nA: Hello {n}\nNarrator: That is the end of Part {n}. You now have half a minute "
+                          f"to check your answers.\n[Pause 30]\nNarrator: Now turn to Part {n + 1}.\n")
+        t = parse_test(part(1) + part(2) + part(3) + "### PART 4\nL: Lecture.\n", "full")
+        self.assertEqual([s.seconds for s in t.segments if s.kind == "pause"], [30, 30, 30])
+        self.assertFalse(any(s.auto for s in t.segments))
+
+    def test_missing_pause_is_added_right_after_the_announcement(self):
+        from ielts_tts.parser import parse_test
+        t = parse_test("### PART 1\nA: Hi\nNarrator: That is the end of Part 1.\nNarrator: Now turn to Part 2.\n"
+                       "### PART 2\nB: Hello\n### PART 3\nC: x\n### PART 4\nD: y", "full")
+        p1 = [(s.kind, s.text[:20]) for s in t.segments if s.part == 1]
+        self.assertEqual(p1[2][0], "pause")
+        self.assertEqual(p1[3][1], "Now turn to Part 2.")
+
+    def test_final_checking_pause_is_dropped(self):
+        from ielts_tts.parser import parse_test
+        t = parse_test("### PART 4\nL: The end of my talk.\nNarrator: That is the end of Part 4. You now have two "
+                       "minutes to check your answers.\n[Pause 120]", "part4")
+        self.assertEqual([s.kind for s in t.segments], ["speech", "speech"])

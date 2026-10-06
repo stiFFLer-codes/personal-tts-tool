@@ -57,6 +57,24 @@ def _trim(samples: np.ndarray, pad: float = 0.03) -> np.ndarray:
     return samples[max(loud[0] * frame - margin, 0): min((loud[-1] + 1) * frame + margin, len(samples))]
 
 
+PEAK_BINS = 600
+
+
+def peaks(samples: np.ndarray, bins: int = PEAK_BINS) -> list:
+    """Loudness envelope for the waveform seek bar: `bins` values between 0 and 1."""
+    if not len(samples):
+        return []
+    usable = len(samples) // bins * bins or len(samples)
+    chunks = np.abs(samples[:usable]).reshape(min(bins, usable), -1).max(axis=1)
+    top = float(chunks.max()) or 1.0
+    return [round(float(v), 3) for v in np.sqrt(chunks / top)]
+
+
+def read_wav(path: Path) -> np.ndarray:
+    with wave.open(str(path), "rb") as w:
+        return np.frombuffer(w.readframes(w.getnframes()), dtype="<i2").astype(np.float32) / 32767
+
+
 def write_wav(path: Path, samples: np.ndarray):
     pcm = (np.clip(samples, -1.0, 1.0) * 32767).astype("<i2")
     with wave.open(str(path), "wb") as w:
@@ -93,7 +111,7 @@ class Engine:
             if self._kokoro is None:
                 if not self.ready:
                     raise ModelMissing(
-                        "Voice model not found. Run setup.bat (or: python -m ielts_tts.download_models).")
+                        "Voice model not found. Run setup.bat once, then start the app again.")
                 from kokoro_onnx import Kokoro
                 self._kokoro = Kokoro(str(self.model_path), str(self.models_dir / VOICES_FILE))
             return self._kokoro
@@ -199,6 +217,7 @@ class Engine:
             "title": test.title,
             "audio": f"/output/{test_id}.wav",
             "duration": round(len(samples) / SAMPLE_RATE, 2),
+            "peaks": peaks(samples),
             "cast": cast,
             "timeline": timeline,
             **_paper(test, timeline),
@@ -211,7 +230,14 @@ class Engine:
         if not re.fullmatch(r"[a-z0-9-]+", test_id):
             return None
         path = self.output_dir / f"{test_id}.json"
-        return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+        if not path.exists():
+            return None
+        meta = json.loads(path.read_text(encoding="utf-8"))
+        wav = self.output_dir / f"{test_id}.wav"
+        if "peaks" not in meta and wav.exists():        # recordings made before the waveform existed
+            meta["peaks"] = peaks(read_wav(wav))
+            path.write_text(json.dumps(meta, indent=1, ensure_ascii=False), encoding="utf-8")
+        return meta
 
     @staticmethod
     def mp3_available() -> bool:

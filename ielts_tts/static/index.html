@@ -3,95 +3,99 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>IELTS Listening Studio</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎧</text></svg>">
+  <title>Listening Studio</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%23f7b538'/><g fill='%230b0f17'><rect x='8' y='12' width='2.4' height='8' rx='1.2'/><rect x='12.4' y='8' width='2.4' height='16' rx='1.2'/><rect x='16.8' y='10' width='2.4' height='12' rx='1.2'/><rect x='21.2' y='13' width='2.4' height='6' rx='1.2'/></g></svg>">
+  <script>
+    /* Apply the saved theme before first paint so the page never flashes. */
+    try { const t = JSON.parse(localStorage.getItem("theme")); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+  <div class="grain" aria-hidden="true"></div>
   <div class="shell">
     <aside class="sidebar">
-      <div class="brand">🎧 <span>IELTS Listening Studio</span></div>
+      <a class="brand" href="#home" aria-label="Listening Studio home">
+        <span class="lamp" id="brand-lamp" aria-hidden="true"></span>
+        <span class="brand-name">Listening <em>Studio</em></span>
+      </a>
       <nav class="nav" aria-label="Sections">
-        <a href="#home" data-route="home">🏠 <span>Home</span></a>
-        <div class="nav-group">Tasks</div>
-        <a href="#part1" data-route="part1"><b>1</b> <span>Part 1 · Conversation</span></a>
-        <a href="#part2" data-route="part2"><b>2</b> <span>Part 2 · Monologue</span></a>
-        <a href="#part3" data-route="part3"><b>3</b> <span>Part 3 · Discussion</span></a>
-        <a href="#part4" data-route="part4"><b>4</b> <span>Part 4 · Lecture</span></a>
-        <a href="#full" data-route="full">🏁 <span>Full Test</span></a>
-        <div class="nav-group">Train</div>
-        <a href="#practice" data-route="practice">🎧 <span>Practice</span></a>
-        <a href="#exam" data-route="exam">📝 <span>Exam</span></a>
-        <a href="#progress" data-route="progress">📈 <span>Progress</span></a>
+        <a href="#home" data-route="home"><i class="ch">◉</i><span>Home</span></a>
+        <div class="nav-group">Channels</div>
+        <a href="#part1" data-route="part1" class="p1"><i class="ch">01</i><span>Part 1 · Conversation</span></a>
+        <a href="#part2" data-route="part2" class="p2"><i class="ch">02</i><span>Part 2 · Monologue</span></a>
+        <a href="#part3" data-route="part3" class="p3"><i class="ch">03</i><span>Part 3 · Discussion</span></a>
+        <a href="#part4" data-route="part4" class="p4"><i class="ch">04</i><span>Part 4 · Lecture</span></a>
+        <a href="#full" data-route="full" class="pf"><i class="ch">40</i><span>Full Test</span></a>
+        <div class="nav-group">Booth</div>
+        <a href="#practice" data-route="practice"><i class="ch">▶</i><span>Practice</span></a>
+        <a href="#exam" data-route="exam"><i class="ch">●</i><span>Exam</span></a>
+        <a href="#progress" data-route="progress"><i class="ch">▲</i><span>Progress</span></a>
       </nav>
-      <div id="status" class="pill">…</div>
+      <div class="side-foot">
+        <div class="theme-switch" role="radiogroup" aria-label="Theme">
+          <button data-theme-choice="auto" role="radio" title="Follow the system">Auto</button>
+          <button data-theme-choice="light" role="radio" title="Paper and ink">Light</button>
+          <button data-theme-choice="dark" role="radio" title="Night studio">Dark</button>
+        </div>
+        <div id="status" class="pill">…</div>
+      </div>
     </aside>
 
     <main>
       <div id="model-banner" class="banner warn" hidden>
         <strong>Voice model not downloaded yet.</strong>
-        Run <code>setup.bat</code> once (or <code>python -m ielts_tts.download_models</code>), then restart the app.
-        You can still build prompts and check scripts meanwhile.
+        Run <code>setup.bat</code> once, then start the app again. You can still copy prompts and check scripts meanwhile.
       </div>
 
       <!-- ============================ HOME ============================ -->
       <section id="view-home" class="view">
-        <header class="page-head">
-          <h1>Master IELTS Listening, one Part at a time</h1>
-          <p class="muted">Pick a Part to drill, or sit a Full Test. Each task gives you an exam-accurate prompt for
-            Claude, turns Claude's script into exam audio and marks you like the real test.</p>
+        <header class="hero">
+          <div class="hero-text">
+            <div class="eyebrow mono">Studio · offline voices · 40 questions</div>
+            <h1>Tune your ear,<br><em>one Part at a time.</em></h1>
+            <p class="lede">Pick a channel to drill, or sit a full test. Claude writes a fresh exam-style script, the
+              studio voices it, plays it once, and marks you like the real thing.</p>
+          </div>
+          <div class="spectrum" aria-hidden="true"></div>
         </header>
         <div id="task-cards" class="task-cards"></div>
         <div class="card how">
-          <h3>How it works</h3>
+          <h3 class="mono">How a session works</h3>
           <ol class="steps">
-            <li><b>Copy the prompt</b> on a task page (pick a topic and question type, or keep the real exam mix).</li>
-            <li><b>Paste it into Claude.</b> Claude replies with one code block: script, questions and answer key.</li>
-            <li><b>Paste Claude's reply</b> back into the task page. The format checklist makes sure it matches the real exam.</li>
-            <li><b>Generate</b> the audio, then sit it in <b>Exam</b> mode (plays once) and review in <b>Practice</b>.</li>
+            <li><b>Copy the prompt</b> on a channel page. Add a note if you like ("make it hard").</li>
+            <li><b>Paste it into Claude.</b> Claude writes the script, questions and answer key in one code block.</li>
+            <li><b>Paste Claude's reply</b> back. The format check makes sure the app can voice and mark it.</li>
+            <li><b>Generate</b>, then sit it in <b>Exam</b> (plays once) and review it in <b>Practice</b>.</li>
           </ol>
-          <p class="muted small">Have a script from somewhere else? <a href="#custom">Use the custom script page →</a></p>
+          <p class="muted small">Script from somewhere else? <a href="#custom">Use the custom script page →</a></p>
         </div>
       </section>
 
       <!-- ============================ TASK (Part 1–4, Full, Custom) ============================ -->
       <section id="view-task" class="view">
         <header class="page-head">
-          <div class="eyebrow" id="t-eyebrow"></div>
-          <h1 id="t-title"></h1>
-          <p id="t-lede" class="muted"></p>
+          <div class="big-num" id="t-num" aria-hidden="true"></div>
+          <div>
+            <div class="eyebrow mono" id="t-eyebrow"></div>
+            <h1 id="t-title"></h1>
+            <p id="t-lede" class="lede"></p>
+          </div>
         </header>
 
         <div id="t-guide" class="card guide"></div>
 
         <div class="card step" id="t-step-prompt">
           <div class="step-head"><span class="step-no">1</span><h2>Get a script from Claude</h2></div>
-          <div class="form-grid">
-            <label class="field wide" id="t-topic-field">Topic
-              <div class="row gap">
-                <input id="t-topic" type="text" placeholder="Leave empty for a random exam topic">
-                <button id="t-dice" class="ghost" title="Random topic">🎲</button>
-              </div>
-            </label>
-            <label class="field" id="t-focus-field">Question types
-              <select id="t-focus"></select>
-            </label>
-            <label class="field">Difficulty
-              <select id="t-difficulty"></select>
-            </label>
-            <label class="field">Accents
-              <select id="t-accent">
-                <option value="british">British</option>
-                <option value="mixed">British + one American</option>
-              </select>
-            </label>
-          </div>
-          <div id="t-plan" class="chips plan"></div>
-          <div class="row gap wrap">
-            <button id="t-copy" class="primary">📋 Copy prompt</button>
-            <button id="t-new-prompt" class="ghost" title="New topic and question layout">🔄 New prompt</button>
+          <p class="muted">Claude chooses the topic, speakers, question types and pattern from real past papers.
+            The prompt only tells it the format this studio needs.</p>
+          <label class="field" for="t-note">Note to Claude <span class="muted">(optional)</span></label>
+          <textarea id="t-note" class="note-box" rows="2" maxlength="600"
+            placeholder="e.g. make it hard · more map questions · a topic about health"></textarea>
+          <div class="row gap wrap actions">
+            <button id="t-copy" class="primary">Copy prompt</button>
             <a class="button ghost" href="https://claude.ai/new" target="_blank" rel="noopener">Open Claude ↗</a>
-            <button id="t-show-prompt" class="ghost">👁 Show prompt</button>
+            <button id="t-show-prompt" class="ghost">Show prompt</button>
           </div>
           <textarea id="t-prompt" class="prompt-box" readonly hidden></textarea>
         </div>
@@ -101,9 +105,9 @@
             <div class="step-head">
               <span class="step-no" id="t-paste-no">2</span><h2>Paste Claude's script</h2>
               <div class="row gap push">
-                <select id="library-select" title="Open a saved script"><option value="">📚 Library…</option></select>
-                <button id="btn-save" class="ghost" title="Save to the library folder">💾</button>
-                <button id="btn-clear" class="ghost" title="Clear">✨</button>
+                <select id="library-select" title="Open a saved script"><option value="">Library…</option></select>
+                <button id="btn-save" class="ghost icon-btn" title="Save to the library folder">Save</button>
+                <button id="btn-clear" class="ghost icon-btn" title="Clear">Clear</button>
               </div>
             </div>
             <textarea id="script" spellcheck="false" placeholder="Paste the whole code block Claude gave you here…"></textarea>
@@ -114,34 +118,40 @@
             <div id="stats" class="chips"></div>
             <div id="checklist" class="checklist"></div>
             <div id="cast" class="cast"></div>
-            <button id="btn-generate" class="primary big" disabled>🎙️ Generate audio</button>
+            <button id="btn-generate" class="primary big" disabled>Generate audio</button>
             <div id="progress" class="progress" hidden><div class="bar"></div><span class="label"></span></div>
             <div id="render-result" class="result" hidden>
-              <div class="result-title">✅ <span id="result-text"></span></div>
+              <div class="result-title"><span class="lamp on" aria-hidden="true"></span><span id="result-text"></span></div>
               <div class="row gap wrap">
-                <button class="primary alt" data-goto="exam">📝 Take as exam</button>
-                <button class="primary" data-goto="practice">🎧 Practise</button>
-                <a id="dl-wav" class="button ghost" download>⬇ WAV</a>
-                <a id="dl-mp3" class="button ghost" hidden>⬇ MP3</a>
+                <button class="primary" data-goto="exam">Take as exam</button>
+                <button class="ghost" data-goto="practice">Practise</button>
+                <a id="dl-wav" class="button ghost" download>WAV ↓</a>
+                <a id="dl-mp3" class="button ghost" hidden>MP3 ↓</a>
               </div>
             </div>
           </div>
         </div>
 
         <div class="card">
-          <h3 id="t-recent-title">Your recordings</h3>
+          <h3 class="mono" id="t-recent-title">Your recordings</h3>
           <ul id="recent" class="recent"></ul>
         </div>
       </section>
 
       <!-- ============================ PRACTICE ============================ -->
       <section id="view-practice" class="view">
-        <div class="empty" data-empty>Generate a recording on a task page first, or pick one: <select class="test-picker"></select></div>
+        <div class="empty" data-empty>Generate a recording on a channel page first, or pick one: <select class="test-picker"></select></div>
         <div data-loaded hidden>
           <div class="card player">
-            <div class="row between wrap gap">
+            <div class="player-top">
+              <span class="lamp" id="p-lamp" aria-hidden="true"></span>
               <h2 class="test-title"></h2>
-              <select class="test-picker" title="Switch recording"></select>
+              <div class="vu" id="p-vu" aria-hidden="true"></div>
+              <select class="test-picker push" title="Switch recording"></select>
+            </div>
+            <div class="wave-wrap">
+              <canvas id="p-wave" class="wave" height="72" tabindex="0" aria-label="Waveform: click to jump"></canvas>
+              <div id="p-wave-tip" class="wave-tip mono" hidden></div>
             </div>
             <div class="controls">
               <button id="p-prev" class="icon" title="Previous line (←)">⏮</button>
@@ -149,39 +159,39 @@
               <button id="p-next" class="icon" title="Next line (→)">⏭</button>
               <button id="p-replay" class="icon" title="Replay current line (R)">↻</button>
               <button id="p-loop" class="icon toggle" title="Loop current line (L)">⟲</button>
-              <span id="p-time" class="time">0:00 / 0:00</span>
-              <input id="p-seek" type="range" min="0" max="1000" value="0" aria-label="Seek">
+              <span id="p-time" class="time mono">0:00 / 0:00</span>
               <label class="speed">Speed
                 <select id="p-speed">
                   <option value="0.75">0.75×</option><option value="0.9">0.9×</option>
                   <option value="1" selected>1×</option><option value="1.1">1.1×</option><option value="1.25">1.25×</option>
                 </select>
               </label>
+              <div id="p-parts" class="part-tabs" hidden></div>
             </div>
             <div class="row gap wrap toggles">
-              <div id="p-parts" class="part-tabs" hidden></div>
-              <label><input type="checkbox" id="p-blind"> 🙈 Blind mode <kbd>B</kbd></label>
+              <label><input type="checkbox" id="p-blind"> Blind mode <kbd>B</kbd></label>
               <label><input type="checkbox" id="p-showq" checked> Show questions</label>
-              <span class="muted small">Click any line to jump there.</span>
+              <span class="muted small">Click the waveform or any line to jump there.</span>
             </div>
           </div>
           <div class="grid-2 practice-body">
-            <div class="card"><h3>Transcript</h3><ol id="p-transcript" class="transcript"></ol></div>
-            <div class="card" id="p-questions-card"><h3 id="p-q-title">Questions</h3><div id="p-questions" class="questions"></div></div>
+            <div class="card"><h3 class="mono">Transcript</h3><ol id="p-transcript" class="transcript"></ol></div>
+            <div class="card paper" id="p-questions-card"><h3 class="mono" id="p-q-title">Questions</h3><div id="p-questions" class="questions"></div></div>
           </div>
         </div>
       </section>
 
       <!-- ============================ EXAM ============================ -->
       <section id="view-exam" class="view">
-        <div class="empty" data-empty>Generate a recording on a task page first, or pick one: <select class="test-picker"></select></div>
+        <div class="empty" data-empty>Generate a recording on a channel page first, or pick one: <select class="test-picker"></select></div>
         <div data-loaded hidden>
           <div id="e-intro" class="card exam-intro">
+            <div class="eyebrow mono">Exam conditions</div>
             <h2 class="test-title"></h2>
             <p id="e-meta" class="muted"></p>
             <ul class="rules" id="e-rules"></ul>
             <div class="row gap wrap">
-              <button id="e-start" class="primary big">▶ Start exam</button>
+              <button id="e-start" class="primary big">Start exam</button>
               <select class="test-picker" title="Switch recording"></select>
             </div>
             <p id="e-noanswers" class="banner warn" hidden>This script has no <code>=== ANSWERS ===</code> section, so you can listen under exam conditions but it can't be marked.</p>
@@ -189,30 +199,32 @@
 
           <div id="e-live" hidden>
             <div class="card exam-bar">
-              <span id="e-state" class="live">● Playing</span>
+              <span class="onair" id="e-onair"><span class="lamp on" aria-hidden="true"></span><span id="e-state">On air</span></span>
+              <div class="vu" id="e-vu" aria-hidden="true"></div>
               <div class="track"><div id="e-track"></div></div>
-              <span id="e-time" class="time">0:00 / 0:00</span>
-              <label class="vol">🔈 <input id="e-volume" type="range" min="0" max="1" step="0.05" value="1"></label>
+              <span id="e-time" class="time mono">0:00 / 0:00</span>
+              <label class="vol" title="Volume">Vol <input id="e-volume" type="range" min="0" max="1" step="0.05" value="1"></label>
               <button id="e-submit" class="primary" hidden>Submit answers</button>
             </div>
             <div id="e-parts" class="part-tabs exam-parts" hidden></div>
-            <div class="card"><div id="e-questions" class="questions exam"></div></div>
+            <div class="card paper"><div id="e-questions" class="questions exam"></div></div>
           </div>
 
           <div id="e-results" hidden>
             <div class="card score-card">
+              <div class="eyebrow mono">Result</div>
               <div id="e-score" class="score"></div>
               <div id="e-band" class="band"></div>
               <div id="e-parts-score" class="chips center"></div>
               <p id="e-cheer"></p>
               <div class="row gap wrap center">
-                <button class="primary" data-goto="practice">🎧 Review in Practice</button>
-                <button id="e-retry" class="ghost">↺ Retake</button>
+                <button class="primary" data-goto="practice">Review in Practice</button>
+                <button id="e-retry" class="ghost">Retake</button>
               </div>
             </div>
             <div class="grid-2">
-              <div class="card"><h3>Your answers</h3><table id="e-table" class="answers"></table></div>
-              <div class="card"><h3>Transcript</h3><ol id="e-transcript" class="transcript static"></ol></div>
+              <div class="card"><h3 class="mono">Your answers</h3><table id="e-table" class="answers"></table></div>
+              <div class="card"><h3 class="mono">Transcript</h3><ol id="e-transcript" class="transcript static"></ol></div>
             </div>
           </div>
         </div>
@@ -221,18 +233,22 @@
       <!-- ============================ PROGRESS ============================ -->
       <section id="view-progress" class="view">
         <header class="page-head">
-          <h1>Your progress</h1>
-          <p id="h-summary" class="muted"></p>
+          <div class="big-num" aria-hidden="true">▲</div>
+          <div>
+            <div class="eyebrow mono">Levels</div>
+            <h1>Your progress</h1>
+            <p id="h-summary" class="lede"></p>
+          </div>
         </header>
         <div id="h-parts" class="stat-row"></div>
         <div class="grid-2">
           <div class="card">
-            <h3>By question type</h3>
-            <p class="muted small">Your weakest types are at the top. Drill them until they aren't.</p>
+            <h3 class="mono">By question type</h3>
+            <p class="muted small">Weakest first. Drill them until they aren't.</p>
             <table id="h-types" class="answers types"></table>
           </div>
           <div class="card">
-            <h3>Score history</h3>
+            <h3 class="mono">Score history</h3>
             <div id="h-chart" class="chart"></div>
             <table id="h-table" class="answers history"></table>
           </div>

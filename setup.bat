@@ -2,7 +2,7 @@
 setlocal
 cd /d "%~dp0"
 echo.
-echo   === IELTS Listening Studio : one-time setup ===
+echo   === Listening Studio : one-time setup ===
 echo.
 
 rem Find a Python the voice engine supports (3.10 - 3.13). Newest first, 3.12 preferred.

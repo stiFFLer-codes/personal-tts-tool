@@ -2,57 +2,42 @@ import re
 import unittest
 
 from ielts_tts import prompt_builder as pb
-from ielts_tts.grader import word_limit
-from ielts_tts.parser import SET_TYPES
 
 
 class Prompts(unittest.TestCase):
-    def test_every_task_and_focus_builds_without_placeholders(self):
+    def test_every_task_builds_without_placeholders(self):
         for task in pb.TASKS:
-            for focus in [f["id"] for f in pb.focus_options(task)]:
-                for difficulty in pb.DIFFICULTY:
-                    for accent in ("british", "mixed"):
-                        result = pb.build(task, focus=focus, difficulty=difficulty, accent=accent, seed=1)
-                        self.assertNotRegex(result["prompt"], r"\{\{\w+\}\}")
-                        self.assertIn("STRICT OUTPUT FORMAT", result["prompt"])
+            for note in ("", "Make it hard, with plenty of map questions."):
+                prompt = pb.build(task, note)["prompt"]
+                self.assertNotRegex(prompt, r"\{\{\w+\}\}")
+                self.assertIn("STRICT OUTPUT FORMAT", prompt)
+                self.assertIn("Never write the name of the exam anywhere in your output", prompt)
+                self.assertIn("```text", prompt)
 
-    def test_plans_cover_each_part_exactly(self):
-        ranges = {"part1": (1, 10), "part2": (11, 20), "part3": (21, 30), "part4": (31, 40)}
-        for task, plans in pb.PLANS.items():
-            for name, plan in plans.items():
-                for p in plan if isinstance(plan, list) else [plan]:
-                    covered = [n for s in p["sets"] for n in range(s["start"], s["end"] + 1)]
-                    self.assertEqual(covered, list(range(*ranges[task])) + [ranges[task][1]], (task, name))
-                    for s in p["sets"]:
-                        self.assertIn(s["type"], SET_TYPES)
-                        letters = s["type"] in {"mcq", "mcq-multi", "matching", "map"} or "letter" in s["rubric"]
-                        self.assertTrue(letters or word_limit(s["rubric"]), (task, name, s["rubric"]))
-                    if task == "part4":
-                        self.assertIsNone(p["split"])
+    def test_claude_decides_the_content(self):
+        prompt = pb.build("part2")["prompt"]
+        self.assertIn("WHAT IS UP TO YOU", prompt)
+        self.assertIn("do not fall back on one fixed template", prompt)
+        # No prescribed plans, topics or difficulty any more.
+        self.assertNotRegex(prompt, r"QUESTION PLAN|TOPIC / SITUATION|DIFFICULTY \(")
 
-    def test_focus_drill_uses_only_that_type(self):
-        prompt = pb.build("part2", focus="map", seed=2)["prompt"]
-        headers = re.findall(r"Header: @SET \S+ \| (\S+) \|", prompt)
-        self.assertEqual(set(headers), {"map"})
+    def test_numbering_per_task(self):
+        self.assertIn("Number the questions 11–20", pb.build("part2")["prompt"])
+        self.assertIn("Number the questions 31–40", pb.build("part4")["prompt"])
+        full = pb.build("full")["prompt"]
+        self.assertIn("all FOUR Parts", full)
+        self.assertIn("31–40 in Part 4", full)
 
-    def test_full_test_has_four_parts_and_linking_narration(self):
-        prompt = pb.build("full", seed=3)["prompt"]
-        for n in range(1, 5):
-            self.assertIn(f"█████ PART {n}", prompt)
-        self.assertIn("You now have half a minute to check your answers.\n[Pause 30]", prompt)
-        self.assertIn("Narrator: Now turn to Part 2.", prompt)
-        self.assertIn("That is the end of the Listening test.", prompt)
+    def test_note_is_included_and_trimmed(self):
+        prompt = pb.build("part1", "  more\nspelling   questions ")["prompt"]
+        self.assertIn('"more spelling questions"', prompt)
+        self.assertNotIn("The learner adds", pb.build("part1")["prompt"])
+        long = pb.build("part1", "x" * 5000)["prompt"]
+        self.assertLess(len(long), len(pb.build("part1")["prompt"]) + pb.MAX_NOTE + 200)
 
-    def test_official_rubrics(self):
-        self.assertEqual(pb.matching_rubric(11, 16),
-                         "Choose SIX answers from the box and write the correct letter, A–H, next to Questions 11–16.")
-        self.assertEqual(pb.map_rubric(15, 20), "Label the map below. Write the correct letter, A–I, next to Questions 15–20.")
-
-    def test_topic_bank(self):
-        topics = pb.topics()
-        for task in ("part1", "part2", "part3", "part4"):
-            self.assertGreaterEqual(len(topics[task]), 25)
-        self.assertIn(pb.random_topic("part1"), topics["part1"])
+    def test_unknown_task(self):
+        with self.assertRaises(ValueError):
+            pb.build("part9")
 
 
 if __name__ == "__main__":

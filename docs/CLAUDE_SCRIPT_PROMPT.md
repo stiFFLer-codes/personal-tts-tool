@@ -1,38 +1,35 @@
 # Getting exam-accurate scripts from Claude
 
 **You don't need to copy anything from this file.** Every task page in the app (Part 1, Part 2, Part 3,
-Part 4, Full Test) builds the right prompt for you: pick a topic, question types and difficulty, then
-click **📋 Copy prompt**, paste it into Claude, and paste Claude's reply back into the page.
+Part 4, Full Test) has one ready-made prompt: optionally type a **Note to Claude**, click **Copy prompt**,
+paste it into Claude, and paste Claude's reply back into the page.
 
-This file explains what those prompts contain and the strict script format they make Claude follow,
-so you can tweak them or write scripts by hand.
+## Who decides what
+
+- **Claude decides the content:** topic, setting, speakers, question types and how they're mixed, the
+  instructions, where the narrator speaks and pauses, distractors and difficulty. The prompt asks it to base
+  these on real past papers and recent tests, and to vary them instead of following a fixed template.
+- **The prompt fixes only the format** the app needs to voice the script, show the question paper and mark
+  the answers (see below), plus one rule: the exam's name must not appear anywhere in the output.
+- **Your note** (optional, up to 600 characters) is added to the prompt as a request Claude follows as long as
+  the test stays realistic. **Drill this** on the Progress page fills it in for you.
 
 ## Where the prompts live
 
 | File | What it is |
 |---|---|
-| `ielts_tts/prompts/part1.md` … `part4.md` | What each real Part is like (context, speakers, length, traps) and its exact narrator lines |
-| `ielts_tts/prompts/full_test.md` | The whole 40-question test: difficulty curve and the narration that links the Parts |
-| `ielts_tts/prompts/_format.md` | Shared quality rules, the strict output format and Claude's self-check list |
-| `ielts_tts/prompts/topics.json` | About 30 realistic topics per Part, used by 🎲 |
-| `ielts_tts/prompt_builder.py` | The question plans per Part (real-exam mixes and single-type drills) with the official rubric wording |
+| `ielts_tts/prompts/part1.md` … `part4.md` | A short brief: write one original Part n, indistinguishable from a real one |
+| `ielts_tts/prompts/full_test.md` | The same for all four Parts in the real order, with the narration and checks between them |
+| `ielts_tts/prompts/_format.md` | What's up to Claude, the strict output format and a format self-check |
+| `ielts_tts/prompt_builder.py` | Joins brief + note + format and fills in the question numbers |
 
-Edit the `.md` files to change the wording; the app picks up the changes on the next prompt. You can also
-add your own topics to `topics.json`.
+Edit the `.md` files to change the wording; the app picks up the changes on the next prompt.
 
-## What the real test looks like (and what the prompts enforce)
+## What the app adds by itself
 
-| Part | Context | Speakers | Usual question types | Narration |
-|---|---|---|---|---|
-| 1 | Everyday social (booking, enquiry) | 2 | Form / note / table completion, sometimes MCQ | Reading time → first block → "Before you hear the rest…" → second block |
-| 2 | Everyday social monologue (guide, presenter) | 1 | MCQ + map/plan labelling or matching, choose TWO | Same two-block pattern |
-| 3 | Educational discussion (students + tutor) | 2–4 | MCQ, matching, choose TWO, flow-chart, sentence completion | Same two-block pattern |
-| 4 | Academic lecture | 1 | Note completion, ONE WORD ONLY (sometimes summary/flow-chart) | **No break in the middle** |
-
-- 40 questions, about 30 minutes, heard **once**, answers in the order you hear them.
-- On the computer-delivered test there's a 30-second check after each of Parts 1–3 and 2 minutes at the end.
-- Word limits come from the instructions ("ONE WORD ONLY", "ONE WORD AND/OR A NUMBER", "NO MORE THAN TWO WORDS"). Going over is wrong, and so is misspelling.
-- The Part 1 example was removed from the real test in 2020, so the prompts don't include one.
+- In a full test, if a Part doesn't end with "That is the end of Part n" and a pause, the app adds them (30 s check).
+- A checking pause at the very end of the script is dropped: the app gives you 2 minutes to check after the
+  recording stops, like the computer-delivered test.
 
 ## The strict script format
 
@@ -92,4 +89,4 @@ block; if you paste the fence lines too, the app ignores them.
 The checklist on the task page names the problem, for example *"Part 4 Q31–40: answer key breaks the word
 limit: Q33 'coral polyps'"*. Either fix it in the paste box, or reply to Claude:
 
-> Your script fails these checks: <paste the ❌ lines>. Fix them and send the whole corrected code block again.
+> Your script fails these format checks: <paste the ❌ lines>. Fix them and send the whole corrected code block again.

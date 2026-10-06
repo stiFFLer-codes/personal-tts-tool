@@ -18,7 +18,8 @@ STATIC = Path(__file__).resolve().parent / "static"
 LIBRARY = ROOT / "library"
 RESULTS = ROOT / "results"
 TYPES = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8",
-         ".js": "text/javascript; charset=utf-8", ".wav": "audio/wav", ".mp3": "audio/mpeg"}
+         ".js": "text/javascript; charset=utf-8", ".wav": "audio/wav", ".mp3": "audio/mpeg",
+         ".woff2": "font/woff2", ".txt": "text/plain; charset=utf-8"}
 
 
 class App:
@@ -56,7 +57,7 @@ def load_history():
 
 def make_handler(app: App):
     class Handler(BaseHTTPRequestHandler):
-        server_version = "IELTSListening/1.0"
+        server_version = "ListeningStudio/2.0"
 
         def log_message(self, fmt, *args):     # keep the console quiet except for errors
             if args and str(args[1])[:1] in "45":
@@ -130,7 +131,9 @@ def make_handler(app: App):
                     return self.send_file(STATIC / "index.html")
                 if path.startswith("/static/"):
                     name = path[len("/static/"):]
-                    if not re.fullmatch(r"[\w.-]+", name):
+                    parts = name.split("/")
+                    if (not re.fullmatch(r"[\w.-]+(?:/[\w.-]+)?", name)
+                            or any(part in (".", "..") for part in parts)):
                         return self.error("Not found", 404)
                     return self.send_file(STATIC / name)
                 if path.startswith("/output/"):
@@ -188,23 +191,12 @@ def make_handler(app: App):
                         return self.error("Not found", 404)
                     return self.send_json({"file": f.name, "script": f.read_text(encoding="utf-8")})
                 if path == "/api/tasks":
-                    return self.send_json({
-                        "tasks": {t: {"focus": prompt_builder.focus_options(t)} for t in prompt_builder.TASKS},
-                        "difficulty": [{"id": k, "label": prompt_builder.DIFFICULTY_LABELS[k]} for k in prompt_builder.DIFFICULTY],
-                        "types": SET_TYPES,
-                    })
+                    return self.send_json({"tasks": list(prompt_builder.TASKS), "types": SET_TYPES})
                 if path == "/api/prompt":
-                    q = {k: v[0] for k, v in query.items()}
-                    if q.get("task") not in prompt_builder.TASKS:
-                        return self.error("Unknown task")
-                    return self.send_json(prompt_builder.build(
-                        q["task"], topic=q.get("topic", ""), focus=q.get("focus", "mix"),
-                        difficulty=q.get("difficulty", "7-8"), accent=q.get("accent", "british")))
-                if path == "/api/topic":
                     task = (query.get("task") or [""])[0]
-                    if task not in prompt_builder.TASKS or task == "full":
+                    if task not in prompt_builder.TASKS:
                         return self.error("Unknown task")
-                    return self.send_json({"topic": prompt_builder.random_topic(task)})
+                    return self.send_json(prompt_builder.build(task, note=(query.get("note") or [""])[0]))
                 if path == "/api/history":
                     return self.send_json({"history": load_history()})
                 return self.error("Not found", 404)
